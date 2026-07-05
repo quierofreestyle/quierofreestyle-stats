@@ -1,0 +1,9 @@
+{
+  "name": "quierofreestyle-stats",
+  "version": "0.7.0",
+  "description": "Base de datos del freestyle de Alta Gracia.",
+  "private": true,
+  "scripts": {
+    "generar-json": "node tools/generar-json.js"
+  }
+}

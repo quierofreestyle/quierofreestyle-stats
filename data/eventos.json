@@ -1,0 +1,1396 @@
+[
+  {
+    "id": "sativa-free-2026-01-05-1",
+    "fecha": "2026-01-05",
+    "fecha_visible": "05/01/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      },
+      {
+        "competidor_id": "efra",
+        "competidor_nombre": "Efra"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-01-09-2",
+    "fecha": "2026-01-09",
+    "fecha_visible": "09/01/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "kaefe",
+        "competidor_nombre": "Kaefe"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-01-16-3",
+    "fecha": "2026-01-16",
+    "fecha_visible": "16/01/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "genes",
+        "competidor_nombre": "Genes"
+      },
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      },
+      {
+        "competidor_id": "fran",
+        "competidor_nombre": "Fran"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      },
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      },
+      {
+        "competidor_id": "meta",
+        "competidor_nombre": "Meta"
+      },
+      {
+        "competidor_id": "kaefe",
+        "competidor_nombre": "Kaefe"
+      }
+    ],
+    "modalidad": "Pandilla",
+    "modalidad_base": "Pandilla",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-01-20-4",
+    "fecha": "2026-01-20",
+    "fecha_visible": "20/01/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-01-23-5",
+    "fecha": "2026-01-23",
+    "fecha_visible": "23/01/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "narva",
+        "competidor_nombre": "Narva"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-01-26-6",
+    "fecha": "2026-01-26",
+    "fecha_visible": "26/01/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "tesla-teslacba",
+        "competidor_nombre": "Tesla (teslacba)"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Pre Regional",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-01-30-7",
+    "fecha": "2026-01-30",
+    "fecha_visible": "30/01/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Pre Regional",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-02-02-8",
+    "fecha": "2026-02-02",
+    "fecha_visible": "02/02/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      },
+      {
+        "competidor_id": "gama",
+        "competidor_nombre": "Gama"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "2vs2 (R)",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-02-09-9",
+    "fecha": "2026-02-09",
+    "fecha_visible": "09/02/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-02-13-10",
+    "fecha": "2026-02-13",
+    "fecha_visible": "13/02/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      },
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "tomy-cba",
+        "competidor_nombre": "Tomy (Cba)"
+      },
+      {
+        "competidor_id": "thau",
+        "competidor_nombre": "Thau"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-02-15-11",
+    "fecha": "2026-02-15",
+    "fecha_visible": "15/02/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local ft Sativa Free",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-02-20-12",
+    "fecha": "2026-02-20",
+    "fecha_visible": "20/02/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "genes",
+        "competidor_nombre": "Genes"
+      },
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "la-muela",
+        "competidor_nombre": "La Muela"
+      },
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      }
+    ],
+    "modalidad": "Multiverse",
+    "modalidad_base": "Multiverse",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-02-22-13",
+    "fecha": "2026-02-22",
+    "fecha_visible": "22/02/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Regional",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-02-23-14",
+    "fecha": "2026-02-23",
+    "fecha_visible": "23/02/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "chucho-ith",
+        "competidor_nombre": "Chucho Ith"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "agusdiaz-ith",
+        "competidor_nombre": "agusdiaz.ith"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-03-02-15",
+    "fecha": "2026-03-02",
+    "fecha_visible": "02/03/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "illio-illio-wav",
+        "competidor_nombre": "Illio (illio.wav)"
+      },
+      {
+        "competidor_id": "oeste-oeste-indigo",
+        "competidor_nombre": "Oeste (oeste.indigo)"
+      },
+      {
+        "competidor_id": "lian-lian-wisdom",
+        "competidor_nombre": "Lian (lian.wisdom)"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "3vs3",
+    "modalidad_base": "3vs3",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-06-16",
+    "fecha": "2026-03-06",
+    "fecha_visible": "06/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      },
+      {
+        "competidor_id": "brain",
+        "competidor_nombre": "Brain"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "tomy-ag",
+        "competidor_nombre": "Tomy (AG)"
+      },
+      {
+        "competidor_id": "frida",
+        "competidor_nombre": "Frida"
+      }
+    ],
+    "modalidad": "3vs3",
+    "modalidad_base": "3vs3",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sopa-de-clona-free-2026-03-09-17",
+    "fecha": "2026-03-09",
+    "fecha_visible": "09/03/2026",
+    "competencia_id": "sopa-de-clona-free",
+    "competencia_nombre": "Sopa de clona free",
+    "ganadores": [
+      {
+        "competidor_id": "fran-foro",
+        "competidor_nombre": "Fran Foro"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-13-18",
+    "fecha": "2026-03-13",
+    "fecha_visible": "13/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      },
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      },
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      },
+      {
+        "competidor_id": "narva",
+        "competidor_nombre": "Narva"
+      },
+      {
+        "competidor_id": "",
+        "competidor_nombre": "??"
+      }
+    ],
+    "modalidad": "Multiverse",
+    "modalidad_base": "Multiverse",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-03-15-19",
+    "fecha": "2026-03-15",
+    "fecha_visible": "15/03/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      },
+      {
+        "competidor_id": "salo",
+        "competidor_nombre": "Salo"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      },
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-03-16-20",
+    "fecha": "2026-03-16",
+    "fecha_visible": "16/03/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "mono-strong",
+        "competidor_nombre": "Mono Strong"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "soto",
+        "competidor_nombre": "Soto"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-20-21",
+    "fecha": "2026-03-20",
+    "fecha_visible": "20/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      },
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      },
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-22-22",
+    "fecha": "2026-03-22",
+    "fecha_visible": "22/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "mecha",
+        "competidor_nombre": "Mecha"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      },
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local ft Big Level",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-03-23-23",
+    "fecha": "2026-03-23",
+    "fecha_visible": "23/03/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      },
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      },
+      {
+        "competidor_id": "verde",
+        "competidor_nombre": "Verde"
+      }
+    ],
+    "modalidad": "2vs2 (R)",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-26-24",
+    "fecha": "2026-03-26",
+    "fecha_visible": "26/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "brain",
+        "competidor_nombre": "Brain"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-03-27-25",
+    "fecha": "2026-03-27",
+    "fecha_visible": "27/03/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "karma",
+        "competidor_nombre": "Karma"
+      },
+      {
+        "competidor_id": "dumo",
+        "competidor_nombre": "Dumo"
+      },
+      {
+        "competidor_id": "tropi",
+        "competidor_nombre": "Tropi"
+      }
+    ],
+    "subcampeones": [],
+    "modalidad": "Pandilla",
+    "modalidad_base": "Pandilla",
+    "relevancia": "Manija",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-03-30-26",
+    "fecha": "2026-03-30",
+    "fecha_visible": "30/03/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "mono-strong",
+        "competidor_nombre": "Mono Strong"
+      },
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      },
+      {
+        "competidor_id": "diesiciete",
+        "competidor_nombre": "Diesiciete"
+      },
+      {
+        "competidor_id": "zaiker",
+        "competidor_nombre": "Zaiker"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "hoka",
+        "competidor_nombre": "Hoka"
+      },
+      {
+        "competidor_id": "kelio",
+        "competidor_nombre": "Kelio"
+      },
+      {
+        "competidor_id": "mariano-nicolas",
+        "competidor_nombre": "Mariano Nicolas"
+      },
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      }
+    ],
+    "modalidad": "Pandilla",
+    "modalidad_base": "Pandilla",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-04-04-27",
+    "fecha": "2026-04-04",
+    "fecha_visible": "04/04/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "junior",
+        "competidor_nombre": "Junior"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Pre Provincial",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-04-06-28",
+    "fecha": "2026-04-06",
+    "fecha_visible": "06/04/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "salo",
+        "competidor_nombre": "Salo"
+      },
+      {
+        "competidor_id": "tu-primo-leandro",
+        "competidor_nombre": "Tu primo Leandro"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      },
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-04-10-29",
+    "fecha": "2026-04-10",
+    "fecha_visible": "10/04/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "narva",
+        "competidor_nombre": "Narva"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-04-17-30",
+    "fecha": "2026-04-17",
+    "fecha_visible": "17/04/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "shinden",
+        "competidor_nombre": "Shinden"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      },
+      {
+        "competidor_id": "narva",
+        "competidor_nombre": "Narva"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-04-20-31",
+    "fecha": "2026-04-20",
+    "fecha_visible": "20/04/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "modalidad": "Multiverse",
+    "modalidad_base": "Multiverse",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-04-24-32",
+    "fecha": "2026-04-24",
+    "fecha_visible": "24/04/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-04-27-33",
+    "fecha": "2026-04-27",
+    "fecha_visible": "27/04/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "mono-strong",
+        "competidor_nombre": "Mono Strong"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lautaro-romario",
+        "competidor_nombre": "Lautaro Romario"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "compe-en-la-solares-2026-05-01-34",
+    "fecha": "2026-05-01",
+    "fecha_visible": "01/05/2026",
+    "competencia_id": "compe-en-la-solares",
+    "competencia_nombre": "Compe en la Solares",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "fer",
+        "competidor_nombre": "Fer"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-05-02-35",
+    "fecha": "2026-05-02",
+    "fecha_visible": "02/05/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      },
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      },
+      {
+        "competidor_id": "cmk",
+        "competidor_nombre": "Cmk"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "hbr",
+        "competidor_nombre": "Hbr"
+      },
+      {
+        "competidor_id": "kato",
+        "competidor_nombre": "Kato"
+      },
+      {
+        "competidor_id": "fer",
+        "competidor_nombre": "Fer"
+      }
+    ],
+    "modalidad": "Pandilla",
+    "modalidad_base": "Pandilla",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-05-04-36",
+    "fecha": "2026-05-04",
+    "fecha_visible": "04/05/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      },
+      {
+        "competidor_id": "narva",
+        "competidor_nombre": "Narva"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      },
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-05-09-37",
+    "fecha": "2026-05-09",
+    "fecha_visible": "09/05/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-05-11-38",
+    "fecha": "2026-05-11",
+    "fecha_visible": "11/05/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "tomy",
+        "competidor_nombre": "Tomy"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-05-15-39",
+    "fecha": "2026-05-15",
+    "fecha_visible": "15/05/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "salo",
+        "competidor_nombre": "Salo"
+      },
+      {
+        "competidor_id": "shinden",
+        "competidor_nombre": "Shinden"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-05-18-40",
+    "fecha": "2026-05-18",
+    "fecha_visible": "18/05/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "repartiendo-rimas-2026-05-22-41",
+    "fecha": "2026-05-22",
+    "fecha_visible": "22/05/2026",
+    "competencia_id": "repartiendo-rimas",
+    "competencia_nombre": "Repartiendo Rimas",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "mono-strong",
+        "competidor_nombre": "Mono Strong"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-05-25-42",
+    "fecha": "2026-05-25",
+    "fecha_visible": "25/05/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      },
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      },
+      {
+        "competidor_id": "gabe",
+        "competidor_nombre": "Gabe"
+      },
+      {
+        "competidor_id": "karma",
+        "competidor_nombre": "Karma"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      },
+      {
+        "competidor_id": "tropi",
+        "competidor_nombre": "Tropi"
+      },
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      },
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "4vs4",
+    "modalidad_base": "4vs4",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-05-30-43",
+    "fecha": "2026-05-30",
+    "fecha_visible": "30/05/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "kaefe",
+        "competidor_nombre": "Kaefe"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-06-01-44",
+    "fecha": "2026-06-01",
+    "fecha_visible": "01/06/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      },
+      {
+        "competidor_id": "rayo",
+        "competidor_nombre": "Rayo"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-06-05-45",
+    "fecha": "2026-06-05",
+    "fecha_visible": "05/06/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-06-06-46",
+    "fecha": "2026-06-06",
+    "fecha_visible": "06/06/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "martin-flow",
+        "competidor_nombre": "Martin Flow"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "hbr",
+        "competidor_nombre": "Hbr"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-06-13-47",
+    "fecha": "2026-06-13",
+    "fecha_visible": "13/06/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-06-15-48",
+    "fecha": "2026-06-15",
+    "fecha_visible": "15/06/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "zona-de-replica-2026-06-18-49",
+    "fecha": "2026-06-18",
+    "fecha_visible": "18/06/2026",
+    "competencia_id": "zona-de-replica",
+    "competencia_nombre": "Zona de Réplica",
+    "ganadores": [
+      {
+        "competidor_id": "doble-a",
+        "competidor_nombre": "Doble A"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-06-22-50",
+    "fecha": "2026-06-22",
+    "fecha_visible": "22/06/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "tropi",
+        "competidor_nombre": "Tropi"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "soto",
+        "competidor_nombre": "Soto"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "hotrack-2026-06-26-51",
+    "fecha": "2026-06-26",
+    "fecha_visible": "26/06/2026",
+    "competencia_id": "hotrack",
+    "competencia_nombre": "Hotrack",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "ml",
+        "competidor_nombre": "Ml"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "zona-de-replica-2026-06-30-52",
+    "fecha": "2026-06-30",
+    "fecha_visible": "30/06/2026",
+    "competencia_id": "zona-de-replica",
+    "competencia_nombre": "Zona de Réplica",
+    "ganadores": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  }
+]

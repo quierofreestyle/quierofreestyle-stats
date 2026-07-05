@@ -1,0 +1,65 @@
+[
+  {
+    "id": "compe-en-la-solares",
+    "nombre": "Compe en la Solares",
+    "slug": "compe-en-la-solares",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "euforia-freestyle",
+    "nombre": "Euforia Freestyle",
+    "slug": "euforia-freestyle",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "hotrack",
+    "nombre": "Hotrack",
+    "slug": "hotrack",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "repartiendo-rimas",
+    "nombre": "Repartiendo Rimas",
+    "slug": "repartiendo-rimas",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "sativa-free",
+    "nombre": "Sativa Free",
+    "slug": "sativa-free",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "sopa-de-clona-free",
+    "nombre": "Sopa de clona free",
+    "slug": "sopa-de-clona-free",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
+    "id": "zona-de-replica",
+    "nombre": "Zona de Réplica",
+    "slug": "zona-de-replica",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  }
+]

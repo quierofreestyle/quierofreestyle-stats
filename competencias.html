@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competencias | Quiero Freestyle</title>
+
+  <meta name="description" content="Quiero Freestyle Stats: rankings, campeones, competencias y estadísticas históricas del freestyle de Alta Gracia durante la temporada 2026." />
+  <meta property="og:title" content="Quiero Freestyle Stats | Alta Gracia" />
+  <meta property="og:description" content="La base de datos del freestyle de Alta Gracia: rankings, campeones, competencias y estadísticas 2026." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_AR" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Quiero Freestyle Stats | Alta Gracia" />
+  <meta name="twitter:description" content="Rankings, campeones, competencias y estadísticas del freestyle de Alta Gracia." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <div class="brand-title">Quiero Freestyle Stats</div>
+        <div class="brand-subtitle">Alta Gracia · Temporada 2026</div>
+      </div>
+      <nav class="nav">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="competencias.html" class="active">Competencias</a></li>
+          <li><a href="ranking.html">Competidores</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="container page-hero-inner">
+      <div class="eyebrow">Competencias</div>
+      <h1>Toda la <span class="highlight">escena</span></h1>
+      <p>Competencias relevadas, historial completo de eventos y máximos ganadores.</p>
+    </div>
+  </section>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Máximos ganadores</div>
+            <h2>Top 3 general</h2>
+          </div>
+        </div>
+        <div id="podio-general"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Competencias relevadas</div>
+            <h2>Listado de competencias</h2>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Competencia</th>
+                  <th>Fechas</th>
+                  <th>Campeones distintos</th>
+                  <th>Fecha última compe</th>
+                  <th>Día</th>
+                  <th>Zona</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-competencias-resumen"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Historial general</div>
+            <h2>Todos los eventos</h2>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Competencia</th>
+                  <th>Fecha</th>
+                  <th>Campeón</th>
+                  <th>Subcampeón</th>
+                  <th>Modalidad</th>
+                  <th>Relevancia</th>
+                  <th>Ubicación</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-eventos-general"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="paginacion-eventos"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© 2026 Quiero Freestyle Stats</div>
+      <div>Datos actualizados al: <span id="footer-ultima-actualizacion">-</span></div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
