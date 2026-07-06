@@ -585,35 +585,22 @@
     "foto": ""
   },
   {
+    "id": "tommy",
+    "nombre": "Tommy",
+    "slug": "tommy",
+    "activo": true,
+    "zona": "",
+    "pais": "Argentina",
+    "frase": "",
+    "estilo": "",
+    "instagram": "",
+    "ciudad": "",
+    "foto": ""
+  },
+  {
     "id": "tomy-ag",
     "nombre": "Tomy (AG)",
     "slug": "tomy-ag",
-    "activo": true,
-    "zona": "",
-    "pais": "Argentina",
-    "frase": "",
-    "estilo": "",
-    "instagram": "",
-    "ciudad": "",
-    "foto": ""
-  },
-  {
-    "id": "tomy-cba",
-    "nombre": "Tomy (Cba)",
-    "slug": "tomy-cba",
-    "activo": true,
-    "zona": "",
-    "pais": "Argentina",
-    "frase": "",
-    "estilo": "",
-    "instagram": "",
-    "ciudad": "",
-    "foto": ""
-  },
-  {
-    "id": "tomy",
-    "nombre": "Tomy (Cba)",
-    "slug": "tomy",
     "activo": true,
     "zona": "",
     "pais": "Argentina",

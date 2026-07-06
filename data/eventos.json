@@ -236,8 +236,8 @@
     ],
     "subcampeones": [
       {
-        "competidor_id": "tomy-cba",
-        "competidor_nombre": "Tomy (Cba)"
+        "competidor_id": "tommy",
+        "competidor_nombre": "Tommy"
       },
       {
         "competidor_id": "thau",
@@ -1022,8 +1022,8 @@
     ],
     "subcampeones": [
       {
-        "competidor_id": "tomy",
-        "competidor_nombre": "Tomy"
+        "competidor_id": "tomy-ag",
+        "competidor_nombre": "Tomy (AG)"
       }
     ],
     "modalidad": "1vs1",
@@ -1407,8 +1407,8 @@
     ],
     "subcampeones": [
       {
-        "competidor_id": "tomy",
-        "competidor_nombre": "Tomy"
+        "competidor_id": "tomy-ag",
+        "competidor_nombre": "Tomy (AG)"
       }
     ],
     "modalidad": "1vs1",
