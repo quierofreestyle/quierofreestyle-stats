@@ -1392,5 +1392,28 @@
     "modalidad_base": "1vs1",
     "relevancia": "Local",
     "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "excuse-to-rap-2026-07-05-53",
+    "fecha": "2026-07-05",
+    "fecha_visible": "05/07/2026",
+    "competencia_id": "excuse-to-rap",
+    "competencia_nombre": "Excuse to rap",
+    "ganadores": [
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "tomy",
+        "competidor_nombre": "Tomy"
+      }
+    ],
+    "modalidad": "1vs1",
+    "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
   }
 ]

@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const DEFAULT_CSV_PATH = path.join(PROJECT_ROOT, 'imports', 'datos-2026.csv');
+const DEFAULT_CSV_PATH = path.join(PROJECT_ROOT, 'imports', 'datos - 2026.csv');
 const DATA_DIR = path.join(PROJECT_ROOT, 'data');
 const CSV_PATH = process.argv[2]
   ? path.resolve(process.cwd(), process.argv[2])

@@ -18,6 +18,15 @@
     "descripcion": ""
   },
   {
+    "id": "excuse-to-rap",
+    "nombre": "Excuse to rap",
+    "slug": "excuse-to-rap",
+    "zona": "Alta Gracia",
+    "ciudad": "Alta Gracia",
+    "dia_habitual": "-",
+    "descripcion": ""
+  },
+  {
     "id": "hotrack",
     "nombre": "Hotrack",
     "slug": "hotrack",
