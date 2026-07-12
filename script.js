@@ -76,7 +76,7 @@ function setBreadcrumbs(items = []) {
     <div class="container breadcrumbs-inner">
       ${items.map((item, index) => {
         const isLast = index === items.length - 1;
-        if (isLast || !item.url) return `<span>${escapeHTML(item.label)}</span>`;
+        if (isLast || !item.url) return `<span class="breadcrumb-current">${escapeHTML(item.label)}</span>`;
         return `<a href="${item.url}">${escapeHTML(item.label)}</a><span class="breadcrumb-separator">›</span>`;
       }).join("")}
     </div>
@@ -108,40 +108,65 @@ function ordenarPorFechaDesc(eventos) {
   return [...eventos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 }
 
+function obtenerNombreRanking(item) {
+  return item?.nombre || item?.competidor_nombre || "";
+}
+
+function compararRankingCompetidores(a, b) {
+  const titulosA = Number(a?.titulos || 0);
+  const titulosB = Number(b?.titulos || 0);
+  const subA = Number(a?.subcampeonatos || 0);
+  const subB = Number(b?.subcampeonatos || 0);
+  if (titulosB !== titulosA) return titulosB - titulosA;
+  if (subB !== subA) return subB - subA;
+  return obtenerNombreRanking(a).localeCompare(obtenerNombreRanking(b));
+}
+
 function contarMaximosGanadores(eventos) {
   const conteo = {};
 
+  function asegurar(competidor) {
+    if (!competidor?.competidor_id) return null;
+    const id = competidor.competidor_id;
+    if (!conteo[id]) {
+      conteo[id] = {
+        competidor_id: id,
+        competidor_nombre: competidor.competidor_nombre,
+        titulos: 0,
+        finales: 0,
+        subcampeonatos: 0,
+        ultima_fecha_ganada: "",
+        ultima_fecha_ganada_visible: "-",
+        ultima_competencia_ganada: "-",
+        ultima_competencia_ganada_id: ""
+      };
+    }
+    return conteo[id];
+  }
+
   eventos.forEach(evento => {
     (evento.ganadores || []).forEach(ganador => {
-      const id = ganador.competidor_id;
-      const nombre = ganador.competidor_nombre;
-
-      if (!conteo[id]) {
-        conteo[id] = {
-          competidor_id: id,
-          competidor_nombre: nombre,
-          titulos: 0,
-          ultima_fecha_ganada: evento.fecha,
-          ultima_fecha_ganada_visible: evento.fecha_visible,
-          ultima_competencia_ganada: evento.competencia_nombre,
-          ultima_competencia_ganada_id: evento.competencia_id
-        };
+      const item = asegurar(ganador);
+      if (!item) return;
+      item.titulos += 1;
+      item.finales += 1;
+      if (!item.ultima_fecha_ganada || new Date(evento.fecha) > new Date(item.ultima_fecha_ganada)) {
+        item.ultima_fecha_ganada = evento.fecha;
+        item.ultima_fecha_ganada_visible = evento.fecha_visible;
+        item.ultima_competencia_ganada = evento.competencia_nombre;
+        item.ultima_competencia_ganada_id = evento.competencia_id;
       }
+    });
 
-      conteo[id].titulos += 1;
-
-      if (new Date(evento.fecha) > new Date(conteo[id].ultima_fecha_ganada)) {
-        conteo[id].ultima_fecha_ganada = evento.fecha;
-        conteo[id].ultima_fecha_ganada_visible = evento.fecha_visible;
-        conteo[id].ultima_competencia_ganada = evento.competencia_nombre;
-      }
+    (evento.subcampeones || []).forEach(subcampeon => {
+      const item = asegurar(subcampeon);
+      if (!item) return;
+      item.subcampeonatos += 1;
+      item.finales += 1;
     });
   });
 
-  return Object.values(conteo).sort((a, b) => {
-    if (b.titulos !== a.titulos) return b.titulos - a.titulos;
-    return new Date(b.ultima_fecha_ganada) - new Date(a.ultima_fecha_ganada);
-  });
+  return Object.values(conteo).sort(compararRankingCompetidores);
 }
 
 
@@ -229,87 +254,39 @@ function renderPodioHTML(items, tituloFallback = "Sin datos") {
     top3.push({
       competidor_nombre: tituloFallback,
       titulos: 0,
+      subcampeonatos: 0,
       ultima_fecha_ganada_visible: "-",
       ultima_competencia_ganada: "-",
       ultima_competencia_ganada_id: ""
     });
   }
 
+  const cards = top3.map((item, index) => {
+    const place = index + 1;
+    const medals = ["🥇", "🥈", "🥉"];
+    const classes = ["podium-first", "podium-second", "podium-third"];
+    return `
+      <div class="podium-card ${classes[index]}">
+        <div class="podium-medal">${medals[index]}</div>
+        <div class="podium-place">${place}°</div>
+        <div class="podium-name">${crearLinkCompetidorPorId(item.competidor_id, item.competidor_nombre)}</div>
+        <div class="podium-stat">${item.titulos} títulos</div>
+        <div class="podium-sub">${item.subcampeonatos || 0} subcampeonatos</div>
+        <div class="podium-sub">Última victoria: ${item.ultima_fecha_ganada_visible}</div>
+        <div class="podium-sub">En: ${item.ultima_competencia_ganada}</div>
+      </div>
+    `;
+  }).join("");
+
   return `
-    <div class="podium">
-      <div class="podium-card podium-second">
-        <div class="podium-medal">🥈</div>
-        <div class="podium-place">2°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[1].competidor_id, top3[1].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[1].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[1].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[1].ultima_competencia_ganada}</div>
-      </div>
-
-      <div class="podium-card podium-first">
-        <div class="podium-medal">🥇</div>
-        <div class="podium-place">1°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[0].competidor_id, top3[0].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[0].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[0].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[0].ultima_competencia_ganada}</div>
-      </div>
-
-      <div class="podium-card podium-third">
-        <div class="podium-medal">🥉</div>
-        <div class="podium-place">3°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[2].competidor_id, top3[2].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[2].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[2].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[2].ultima_competencia_ganada}</div>
-      </div>
+    <div class="podium podium-ordered" aria-label="Podio ordenado por títulos, subcampeonatos y orden alfabético">
+      ${cards}
     </div>
   `;
 }
 
 function renderPodioRankingHTML(items) {
-  const top3 = [...items];
-
-  while (top3.length < 3) {
-    top3.push({
-      competidor_nombre: "Sin datos",
-      titulos: 0,
-      ultima_fecha_ganada_visible: "-",
-      ultima_competencia_ganada: "-",
-      ultima_competencia_ganada_id: ""
-    });
-  }
-
-  return `
-    <div class="podium">
-      <div class="podium-card podium-second">
-        <div class="podium-medal">🥈</div>
-        <div class="podium-place">2°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[1].competidor_id, top3[1].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[1].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[1].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[1].ultima_competencia_ganada}</div>
-      </div>
-
-      <div class="podium-card podium-first">
-        <div class="podium-medal">🥇</div>
-        <div class="podium-place">1°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[0].competidor_id, top3[0].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[0].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[0].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[0].ultima_competencia_ganada}</div>
-      </div>
-
-      <div class="podium-card podium-third">
-        <div class="podium-medal">🥉</div>
-        <div class="podium-place">3°</div>
-        <div class="podium-name">${crearLinkCompetidorPorId(top3[2].competidor_id, top3[2].competidor_nombre)}</div>
-        <div class="podium-stat">${top3[2].titulos} títulos</div>
-        <div class="podium-sub">Última victoria: ${top3[2].ultima_fecha_ganada_visible}</div>
-        <div class="podium-sub">En: ${top3[2].ultima_competencia_ganada}</div>
-      </div>
-    </div>
-  `;
+  return renderPodioHTML(items, "Sin datos");
 }
 
 function resumirCompetencias(competencias, eventos) {
@@ -342,9 +319,9 @@ function renderTablaCompetenciasResumen(items) {
       <td><strong><a href="competencia.html?id=${item.id}">${item.nombre}</a></strong></td>
       <td>${item.fechas}</td>
       <td>${item.campeones_distintos}</td>
-      <td>${item.fecha_ultima_compe_visible}</td>
-      <td>${item.dia_habitual}</td>
-      <td>${item.zona}</td>
+      <td class="col-date">${item.fecha_ultima_compe_visible}</td>
+      <td class="col-day">${item.dia_habitual || "-"}</td>
+      <td class="col-location">${item.zona || item.ciudad || "-"}</td>
     </tr>
   `).join("");
 }
@@ -360,7 +337,7 @@ function renderTablaEventos(items, mostrarCompetencia = true) {
       <td>${formatearParticipantes(item.subcampeones)}</td>
       <td>${item.modalidad}</td>
       <td>${item.relevancia}</td>
-      <td>${item.ubicacion}</td>
+      <td class="col-location">${item.ubicacion || "-"}</td>
     </tr>
   `).join("");
 }
@@ -369,18 +346,80 @@ function renderPaginacion(totalItems, pageSize, currentPage) {
   const totalPages = Math.ceil(totalItems / pageSize);
   if (totalPages <= 1) return "";
 
-  let html = `<div class="pagination">`;
+  const maxButtons = 7;
+  const half = Math.floor(maxButtons / 2);
+  let start = Math.max(1, currentPage - half);
+  let end = Math.min(totalPages, start + maxButtons - 1);
+  start = Math.max(1, end - maxButtons + 1);
 
-  for (let i = 1; i <= totalPages; i++) {
-    html += `
-      <button class="page-btn ${i === currentPage ? "active" : ""}" data-page="${i}">
-        ${i}
-      </button>
-    `;
+  let html = `<div class="pagination" role="navigation" aria-label="Paginación de tabla">`;
+  html += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>Anterior</button>`;
+
+  if (start > 1) {
+    html += `<button class="page-btn" data-page="1">1</button>`;
+    if (start > 2) html += `<span class="pagination-ellipsis">…</span>`;
   }
 
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i === currentPage ? "active" : ""}" data-page="${i}" aria-current="${i === currentPage ? "page" : "false"}">${i}</button>`;
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) html += `<span class="pagination-ellipsis">…</span>`;
+    html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+  }
+
+  html += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>Siguiente</button>`;
+  html += `<span class="pagination-info">Página ${currentPage} de ${totalPages}</span>`;
   html += `</div>`;
   return html;
+}
+
+function obtenerContenedorPaginacion(tbody) {
+  const tableCard = tbody.closest(".table-card");
+  if (!tableCard) return null;
+  let container = tableCard.nextElementSibling;
+  if (!container || !container.classList || !container.classList.contains("pagination-container")) {
+    container = document.createElement("div");
+    container.className = "pagination-container";
+    tableCard.insertAdjacentElement("afterend", container);
+  }
+  return container;
+}
+
+function renderTablaPaginada(tbody, items, renderRows, { pageSize = 10, emptyHTML = "" } = {}) {
+  if (!tbody) return;
+  const paginationContainer = obtenerContenedorPaginacion(tbody);
+  let currentPage = 1;
+
+  function render() {
+    if (!Array.isArray(items) || items.length === 0) {
+      tbody.innerHTML = emptyHTML || renderRows([]);
+      if (paginationContainer) paginationContainer.innerHTML = "";
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * pageSize;
+    const pageItems = items.slice(start, start + pageSize);
+
+    tbody.innerHTML = renderRows(pageItems, start);
+
+    if (paginationContainer) {
+      paginationContainer.innerHTML = renderPaginacion(items.length, pageSize, currentPage);
+      paginationContainer.querySelectorAll(".page-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const nextPage = Number(btn.dataset.page);
+          if (!Number.isFinite(nextPage) || nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
+          currentPage = nextPage;
+          render();
+        });
+      });
+    }
+  }
+
+  render();
 }
 
 /* =========================
@@ -391,9 +430,7 @@ async function initCompetenciasPage() {
   const resumenBody = document.getElementById("tabla-competencias-resumen");
   const eventosBody = document.getElementById("tabla-eventos-general");
   const podioContainer = document.getElementById("podio-general");
-  const paginacionContainer = document.getElementById("paginacion-eventos");
-
-  if (!resumenBody || !eventosBody || !podioContainer || !paginacionContainer) return;
+  if (!resumenBody || !eventosBody || !podioContainer) return;
 
   setBreadcrumbs([
     { label: "Inicio", url: "index.html" },
@@ -407,31 +444,15 @@ async function initCompetenciasPage() {
   const resumen = resumirCompetencias(competencias, eventos)
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-  resumenBody.innerHTML = renderTablaCompetenciasResumen(resumen);
+  renderTablaPaginada(resumenBody, resumen, (items) => renderTablaCompetenciasResumen(items), { pageSize: 10, emptyHTML: renderEmptyRow(6, "Todavía no hay competencias registradas.") });
 
   const maximosGanadores = contarMaximosGanadores(eventos);
   podioContainer.innerHTML = renderPodioHTML(maximosGanadores);
 
-  const pageSize = 10;
-  let currentPage = 1;
-
-  function actualizarTablaEventos() {
-    const start = (currentPage - 1) * pageSize;
-    const end = start + pageSize;
-    const pageItems = eventos.slice(start, end);
-
-    eventosBody.innerHTML = renderTablaEventos(pageItems, true);
-    paginacionContainer.innerHTML = renderPaginacion(eventos.length, pageSize, currentPage);
-
-    paginacionContainer.querySelectorAll(".page-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        currentPage = Number(btn.dataset.page);
-        actualizarTablaEventos();
-      });
-    });
-  }
-
-  actualizarTablaEventos();
+  renderTablaPaginada(eventosBody, eventos, (items) => renderTablaEventos(items, true), {
+    pageSize: 10,
+    emptyHTML: renderEmptyRow(7, "Todavía no hay eventos registrados.")
+  });
 }
 
 /* =========================
@@ -500,12 +521,7 @@ function generarRankingCompetencia(eventosCompetencia) {
     });
   });
 
-  return [...ranking.values()].sort((a, b) => {
-    if (b.titulos !== a.titulos) return b.titulos - a.titulos;
-    if (b.finales !== a.finales) return b.finales - a.finales;
-    if (b.subcampeonatos !== a.subcampeonatos) return b.subcampeonatos - a.subcampeonatos;
-    return a.nombre.localeCompare(b.nombre);
-  });
+  return [...ranking.values()].sort(compararRankingCompetidores);
 }
 
 function obtenerRecordDesdeRanking(ranking, campo) {
@@ -514,8 +530,7 @@ function obtenerRecordDesdeRanking(ranking, campo) {
 
   return [...items].sort((a, b) => {
     if (b[campo] !== a[campo]) return b[campo] - a[campo];
-    if (b.titulos !== a.titulos) return b.titulos - a.titulos;
-    return a.nombre.localeCompare(b.nombre);
+    return compararRankingCompetidores(a, b);
   })[0];
 }
 
@@ -698,11 +713,32 @@ async function initCompetenciaPage() {
   }));
 
   podio.innerHTML = renderPodioHTML(topCompetencia);
-  historial.innerHTML = renderCampeonesHistoricos(eventosCompetencia);
-
   if (ultimoEvento) ultimoEvento.innerHTML = renderUltimoEventoCompetencia(ultimaFecha);
   if (records) records.innerHTML = renderRecordsCompetencia(rankingCompetencia);
-  if (rankingBody) rankingBody.innerHTML = renderRankingCompetencia(rankingCompetencia);
+  if (rankingBody) {
+    renderTablaPaginada(rankingBody, rankingCompetencia, (items, startIndex) => {
+      if (items.length === 0) return renderEmptyRow(6, "Todavía no hay datos para esta competencia.");
+      return items.map((item, index) => {
+        const efectividad = item.finales > 0 ? Math.round((item.titulos / item.finales) * 100) : 0;
+        return `
+          <tr>
+            <td><strong>#${startIndex + index + 1}</strong></td>
+            <td><strong>${crearLinkCompetidorPorId(item.id, item.nombre)}</strong></td>
+            <td>${item.titulos}</td>
+            <td>${item.finales}</td>
+            <td>${item.subcampeonatos}</td>
+            <td>${efectividad}%</td>
+          </tr>
+        `;
+      }).join("");
+    }, { pageSize: 10, emptyHTML: renderEmptyRow(6, "Todavía no hay datos para esta competencia.") });
+  }
+  if (historial) {
+    renderTablaPaginada(historial, eventosCompetencia, (items) => renderCampeonesHistoricos(items), {
+      pageSize: 10,
+      emptyHTML: renderEmptyRow(5, "Todavía no hay campeones registrados.")
+    });
+  }
 }
 
 
@@ -737,8 +773,8 @@ function crearItemBusqueda({ tipo, nombre, detalle, url }) {
     <a class="search-result-item" href="${url}">
       <span class="search-result-icon">${icono}</span>
       <span class="search-result-content">
-        <strong>${nombre}</strong>
-        <small>${etiqueta}${detalle ? ` · ${detalle}` : ""}</small>
+        <strong>${escapeHTML(nombre)}</strong>
+        <small>${etiqueta}${detalle ? ` · ${escapeHTML(detalle)}` : ""}</small>
       </span>
     </a>
   `;
@@ -797,7 +833,8 @@ function initBuscadorGlobal(competidores, competencias, eventos) {
       .slice(0, 8);
 
     if (encontrados.length === 0) {
-      results.innerHTML = `<div class="search-empty">No encontré resultados para "${input.value}".</div>`;
+      const terminoVisible = input.value.length > 60 ? `${input.value.slice(0, 60)}...` : input.value;
+      results.innerHTML = `<div class="search-empty">No encontré resultados para "${escapeHTML(terminoVisible)}".</div>`;
       return;
     }
 
@@ -806,6 +843,12 @@ function initBuscadorGlobal(competidores, competencias, eventos) {
 
   input.addEventListener("input", renderResultados);
   input.addEventListener("focus", renderResultados);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      results.innerHTML = "";
+      input.blur();
+    }
+  });
 }
 
 function competidorParticipaEnLista(lista, competidorId) {
@@ -976,12 +1019,7 @@ function generarEstadisticasCompetidores(eventos, perfilesManuales = []) {
     });
   });
 
-  return [...estadisticas.values()].sort((a, b) => {
-    if (b.titulos !== a.titulos) return b.titulos - a.titulos;
-    if (b.titulos_1vs1 !== a.titulos_1vs1) return b.titulos_1vs1 - a.titulos_1vs1;
-    if (b.finales !== a.finales) return b.finales - a.finales;
-    return a.nombre.localeCompare(b.nombre);
-  });
+  return [...estadisticas.values()].sort(compararRankingCompetidores);
 }
 
 function buscarCompetidorEnEstadisticas(estadisticas, parametro) {
@@ -1097,7 +1135,10 @@ async function initCompetidorPage() {
     <tr><td><strong>Último título</strong></td><td>${ultimoTitulo ? `${ultimoTitulo.fecha_visible} · ${crearLinkCompetenciaPorId(ultimoTitulo.competencia_id, ultimoTitulo.competencia_nombre)}` : "-"}</td></tr>
   `;
 
-  historial.innerHTML = renderHistorialCompetidor(resultados);
+  renderTablaPaginada(historial, resultados, (items) => renderHistorialCompetidor(items), {
+    pageSize: 10,
+    emptyHTML: renderEmptyRow(4, "Todavía no hay resultados cargados para este competidor.")
+  });
 }
 
 /* =========================
@@ -1134,7 +1175,7 @@ async function initIndexPage() {
       <td>${formatearParticipantes(item.subcampeones)}</td>
       <td>${item.modalidad}</td>
       <td>${item.relevancia}</td>
-      <td>${item.ubicacion}</td>
+      <td class="col-location">${item.ubicacion || "-"}</td>
     </tr>
   `).join("") : renderEmptyRow(7, "Todavía no hay eventos registrados.");
 
@@ -1181,17 +1222,20 @@ async function initRankingPage() {
     podioContainer.innerHTML = renderPodioRankingHTML(dataPodio.slice(0, 3));
   }
 
-  tablaRanking.innerHTML = ranking.length ? ranking.map((item, index) => `
-    <tr>
-      <td><strong>#${index + 1}</strong></td>
-      <td><strong><a href="competidor.html?id=${item.id}">${item.nombre}</a></strong></td>
-      <td>${item.zona || "-"}</td>
-      <td>${item.titulos_1vs1}</td>
-      <td>${item.titulos_duplas}</td>
-      <td>${item.titulos_trios}</td>
-      <td>${item.titulos}</td>
-    </tr>
-  `).join("") : renderEmptyRow(7, "Todavía no hay competidores registrados.");
+  renderTablaPaginada(tablaRanking, ranking, (items, startIndex) => {
+    if (!items.length) return renderEmptyRow(7, "Todavía no hay competidores registrados.");
+    return items.map((item, index) => `
+      <tr>
+        <td><strong>#${startIndex + index + 1}</strong></td>
+        <td><strong><a href="competidor.html?id=${item.id}">${item.nombre}</a></strong></td>
+        <td class="col-location">${item.zona || item.ciudad || "-"}</td>
+        <td>${item.titulos_1vs1}</td>
+        <td>${item.titulos_duplas}</td>
+        <td>${item.titulos_trios}</td>
+        <td>${item.titulos}</td>
+      </tr>
+    `).join("");
+  }, { pageSize: 12, emptyHTML: renderEmptyRow(7, "Todavía no hay competidores registrados.") });
 }
 
 /* =========================

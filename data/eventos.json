@@ -401,8 +401,8 @@
         "competidor_nombre": "Frida"
       }
     ],
-    "modalidad": "3vs3",
-    "modalidad_base": "3vs3",
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
     "relevancia": "Local",
     "ubicacion": "Alta Gracia"
   },
@@ -1413,6 +1413,84 @@
     ],
     "modalidad": "1vs1",
     "modalidad_base": "1vs1",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "sativa-free-2026-07-06-54",
+    "fecha": "2026-07-06",
+    "fecha_visible": "06/07/2026",
+    "competencia_id": "sativa-free",
+    "competencia_nombre": "Sativa Free",
+    "ganadores": [
+      {
+        "competidor_id": "mono-strong",
+        "competidor_nombre": "Mono Strong"
+      },
+      {
+        "competidor_id": "pancho",
+        "competidor_nombre": "Pancho"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "naista",
+        "competidor_nombre": "Naista"
+      },
+      {
+        "competidor_id": "thau",
+        "competidor_nombre": "Thau"
+      }
+    ],
+    "modalidad": "2vs2",
+    "modalidad_base": "2vs2",
+    "relevancia": "Local",
+    "ubicacion": "Alta Gracia"
+  },
+  {
+    "id": "euforia-freestyle-2026-07-10-55",
+    "fecha": "2026-07-10",
+    "fecha_visible": "10/07/2026",
+    "competencia_id": "euforia-freestyle",
+    "competencia_nombre": "Euforia Freestyle",
+    "ganadores": [
+      {
+        "competidor_id": "lauty",
+        "competidor_nombre": "Lauty"
+      },
+      {
+        "competidor_id": "gona",
+        "competidor_nombre": "Gona"
+      },
+      {
+        "competidor_id": "hbr",
+        "competidor_nombre": "Hbr"
+      },
+      {
+        "competidor_id": "fer",
+        "competidor_nombre": "Fer"
+      }
+    ],
+    "subcampeones": [
+      {
+        "competidor_id": "tomy-ag",
+        "competidor_nombre": "Tomy (AG)"
+      },
+      {
+        "competidor_id": "abel",
+        "competidor_nombre": "Abel"
+      },
+      {
+        "competidor_id": "genes",
+        "competidor_nombre": "Genes"
+      },
+      {
+        "competidor_id": "cmk",
+        "competidor_nombre": "Cmk"
+      }
+    ],
+    "modalidad": "Pandilla",
+    "modalidad_base": "Pandilla",
     "relevancia": "Local",
     "ubicacion": "Alta Gracia"
   }

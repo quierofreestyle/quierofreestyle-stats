@@ -1176,3 +1176,166 @@ table a:hover {
     text-align: center;
   }
 }
+
+/* v1.0.1 Sprint Navegación y estabilidad */
+.breadcrumb-current {
+  color: var(--accent);
+}
+
+.podium-ordered .podium-first {
+  order: 2;
+}
+
+.podium-ordered .podium-second {
+  order: 1;
+}
+
+.podium-ordered .podium-third {
+  order: 3;
+}
+
+.pagination-container {
+  margin-top: 20px;
+}
+
+.pagination {
+  align-items: center;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn:disabled:hover {
+  background: rgba(255,255,255,0.04);
+  color: white;
+  transform: none;
+}
+
+.pagination-info,
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+}
+
+.global-search {
+  position: relative;
+  z-index: 20;
+}
+
+.global-search-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 10px);
+  max-height: min(420px, 58vh);
+  overflow-y: auto;
+  z-index: 40;
+  margin-top: 0;
+  padding-right: 4px;
+}
+
+.search-result-content {
+  min-width: 0;
+}
+
+.search-result-content strong,
+.search-result-content small,
+.search-empty {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.search-result-item {
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 900px) {
+  .podium-ordered .podium-first,
+  .podium-ordered .podium-second,
+  .podium-ordered .podium-third {
+    order: initial;
+  }
+
+  .podium-first {
+    border-color: rgba(241, 187, 21, 0.35);
+  }
+}
+
+@media (max-width: 600px) {
+  .pagination {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .page-btn {
+    flex: 0 0 auto;
+    padding: 9px 12px;
+    font-size: 0.78rem;
+  }
+
+  .pagination-info {
+    width: 100%;
+    min-height: auto;
+    margin-top: 4px;
+  }
+
+  .global-search-results {
+    max-height: 50vh;
+  }
+}
+
+/* Orden claro del Top 3: 1°, 2°, 3° en todos los dispositivos */
+.podium-ordered .podium-first { order: 1; }
+.podium-ordered .podium-second { order: 2; }
+.podium-ordered .podium-third { order: 3; }
+
+
+/* =========================
+   TABLE COLUMN CONSISTENCY
+========================= */
+.competitions-summary-table {
+  min-width: 980px;
+}
+
+.events-table {
+  min-width: 1040px;
+}
+
+.competitors-ranking-table {
+  min-width: 980px;
+}
+
+.col-location,
+.col-date,
+.col-day {
+  white-space: nowrap;
+}
+
+.col-location {
+  min-width: 140px;
+}
+
+.col-date {
+  min-width: 130px;
+}
+
+.col-day {
+  min-width: 130px;
+}
+
+@media (max-width: 780px) {
+  .competitions-summary-table,
+  .events-table,
+  .competitors-ranking-table {
+    min-width: 920px;
+  }
+}

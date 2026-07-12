@@ -14,7 +14,7 @@
     "slug": "euforia-freestyle",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Viernes/Sábado",
     "descripcion": ""
   },
   {
@@ -23,7 +23,7 @@
     "slug": "excuse-to-rap",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Domingo",
     "descripcion": ""
   },
   {
@@ -32,7 +32,7 @@
     "slug": "hotrack",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Viernes/Sábado",
     "descripcion": ""
   },
   {
@@ -41,7 +41,7 @@
     "slug": "repartiendo-rimas",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Viernes",
     "descripcion": ""
   },
   {
@@ -50,7 +50,7 @@
     "slug": "sativa-free",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Lunes",
     "descripcion": ""
   },
   {
@@ -68,7 +68,7 @@
     "slug": "zona-de-replica",
     "zona": "Alta Gracia",
     "ciudad": "Alta Gracia",
-    "dia_habitual": "-",
+    "dia_habitual": "Martes",
     "descripcion": ""
   }
 ]
