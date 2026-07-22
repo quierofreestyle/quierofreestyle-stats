@@ -1,4 +1,4 @@
-﻿name: Validar aplicación
+name: Validar aplicación
 
 on:
   pull_request:
@@ -19,6 +19,9 @@ jobs:
     name: TypeScript, lint, tests y build
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
 
     steps:
       - name: Descargar repositorio
