@@ -5,6 +5,17 @@ import { requireAdminUser } from "../../server/auth/permissions";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireAdminUser();
+  const canReadSubjects =
+    user.permissions.has("SUBJECT_READ") ||
+    user.permissions.has("SUBJECT_MANAGE");
+  const canReadEvents =
+    user.permissions.has("EVENT_READ") ||
+    user.permissions.has("EVENT_MANAGE") ||
+    user.permissions.has("EVENT_PUBLISH");
+  const canReadIssues =
+    user.permissions.has("EVENT_MANAGE") ||
+    user.permissions.has("SUBMISSION_REVIEW") ||
+    user.permissions.has("AUDIT_READ");
 
   return (
     <div className="admin-shell">
@@ -15,9 +26,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </Link>
         <nav aria-label="Administración">
           <Link href="/admin">Resumen</Link>
-          <span aria-disabled="true">Competencias <small>Próximamente</small></span>
-          <span aria-disabled="true">Eventos <small>Próximamente</small></span>
-          <span aria-disabled="true">Incidencias <small>Próximamente</small></span>
+          {canReadSubjects ? <Link href="/admin/competencias">Competencias</Link> : null}
+          {canReadEvents ? <Link href="/admin/eventos">Eventos</Link> : null}
+          {canReadSubjects ? <Link href="/admin/competidores">Competidores</Link> : null}
+          {canReadSubjects ? <Link href="/admin/organizaciones">Organizaciones</Link> : null}
+          {canReadIssues ? <Link href="/admin/incidencias">Incidencias</Link> : null}
         </nav>
         <div className="admin-account">
           <span>{user.email ?? "Cuenta administrativa"}</span>

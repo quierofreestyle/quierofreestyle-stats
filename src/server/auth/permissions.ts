@@ -61,3 +61,20 @@ export async function requireAdminUser() {
 
   return user;
 }
+
+export async function requireAdminCapability(
+  required: readonly string[],
+  nextPath: string,
+) {
+  const user = await getAuthenticatedAppUser();
+
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  if (!hasAnyCapability(user.permissions, required)) {
+    redirect("/sin-acceso");
+  }
+
+  return user;
+}
