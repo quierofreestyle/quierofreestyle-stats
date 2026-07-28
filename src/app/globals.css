@@ -1293,6 +1293,37 @@ a {
   cursor: pointer;
 }
 
+.admin-form-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-required {
+  color: #c13b3b;
+}
+
+.admin-required-note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 0 0 0.75rem;
+}
+
+.admin-editor label small {
+  color: var(--muted);
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  margin-top: 0.35rem;
+}
+
+.admin-create-related {
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
 .admin-row-action {
   color: var(--accent);
   font-size: 0.76rem;

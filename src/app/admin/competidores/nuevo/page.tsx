@@ -1,25 +1,19 @@
-import Link from "next/link";
-
 import { createCompetitor } from "../../_actions/subjects";
-import { FormFeedback, SubjectFields } from "../../../../features/admin/subject-fields";
+import { AdminSubjectForm } from "../../../../features/admin/admin-subject-form";
+import { SubjectFields } from "../../../../features/admin/subject-fields";
 import { requireAdminCapability } from "../../../../server/auth/permissions";
 import { db } from "../../../../server/db";
 
-type Props = { searchParams: Promise<{ error?: string }> };
-
-export default async function NewCompetitorPage({ searchParams }: Props) {
+export default async function NewCompetitorPage() {
   await requireAdminCapability(["SUBJECT_MANAGE"], "/admin/competidores/nuevo");
-  const [{ error }, regions] = await Promise.all([
-    searchParams,
-    db.region.findMany({ orderBy: [{ type: "asc" }, { name: "asc" }] }),
-  ]);
+  const regions = await db.region.findMany({ orderBy: [{ type: "asc" }, { name: "asc" }] });
   return (
     <>
       <header className="admin-header">
         <div><p className="eyebrow">Competidores</p><h1>Nuevo</h1></div>
       </header>
-      <FormFeedback error={error} />
-      <form action={createCompetitor} className="admin-editor">
+      <p className="admin-required-note"><span className="admin-required">*</span> Campos obligatorios</p>
+      <AdminSubjectForm action={createCompetitor} cancelHref="/admin/competidores" submitLabel="Crear competidor">
         <SubjectFields />
         <label>
           Región de origen
@@ -29,10 +23,7 @@ export default async function NewCompetitorPage({ searchParams }: Props) {
           </select>
         </label>
         <label>Fecha de nacimiento<input type="date" name="birthDate" /></label>
-        <div className="admin-form-actions">
-          <Link href="/admin/competidores">Cancelar</Link><button type="submit">Crear competidor</button>
-        </div>
-      </form>
+      </AdminSubjectForm>
     </>
   );
 }

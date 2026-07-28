@@ -1,3 +1,9 @@
+"use client";
+
+import { useState } from "react";
+
+import { normalizeSlug } from "./subject-form";
+
 type SubjectDefaults = {
   displayName?: string;
   slug?: string;
@@ -6,31 +12,43 @@ type SubjectDefaults = {
 };
 
 export function SubjectFields({ defaults = {} }: { defaults?: SubjectDefaults }) {
+  const [slug, setSlug] = useState(defaults.slug ?? "");
+  const [slugEdited, setSlugEdited] = useState(Boolean(defaults.slug));
+
   return (
     <>
       <label>
-        Nombre visible
+        Nombre visible <span className="admin-required" aria-hidden="true">*</span>
         <input
           name="displayName"
           required
           minLength={2}
           maxLength={120}
           defaultValue={defaults.displayName}
+          onChange={(event) => {
+            if (!slugEdited) setSlug(normalizeSlug(event.target.value));
+          }}
         />
       </label>
       <label>
-        Slug
+        Slug <span className="admin-required" aria-hidden="true">*</span>
         <input
           name="slug"
+          required
           maxLength={120}
           pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-          defaultValue={defaults.slug}
+          value={slug}
+          onChange={(event) => {
+            setSlug(event.target.value);
+            setSlugEdited(Boolean(event.target.value));
+          }}
           placeholder="Se genera desde el nombre"
         />
+        <small>Minúsculas, números y guiones. Se completa desde el nombre hasta que lo edites.</small>
       </label>
       <label>
-        Estado
-        <select name="status" defaultValue={defaults.status ?? "DRAFT"}>
+        Estado <span className="admin-required" aria-hidden="true">*</span>
+        <select name="status" required defaultValue={defaults.status ?? "DRAFT"}>
           <option value="DRAFT">Borrador</option>
           <option value="ACTIVE">Activo</option>
           <option value="ARCHIVED">Archivado</option>
@@ -50,8 +68,4 @@ export function FormFeedback({ error }: { error?: string }) {
       {error}
     </p>
   ) : null;
-}
-
-export function dateInputValue(value?: Date | null) {
-  return value ? value.toISOString().slice(0, 10) : "";
 }

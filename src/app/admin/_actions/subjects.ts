@@ -7,24 +7,22 @@ import {
   optionalDate,
   optionalUrl,
   readSubjectForm,
+  type SubjectFormState,
 } from "../../../features/admin/subject-form";
 import { requireAdminCapability } from "../../../server/auth/permissions";
 import { db } from "../../../server/db";
 
 const SUBJECT_MANAGE = ["SUBJECT_MANAGE"] as const;
 
-function destination(path: string, error?: unknown) {
-  if (!error) return path;
-  return `${path}?error=${encodeURIComponent(actionError(error))}`;
-}
-
 async function assertUniqueSubject(
+  type: "COMPETITOR" | "COMPETITION" | "ORGANIZATION",
   slug: string,
   displayName: string,
   excludingId?: string,
 ) {
   const duplicate = await db.subject.findFirst({
     where: {
+      type,
       ...(excludingId ? { id: { not: excludingId } } : {}),
       OR: [
         { slug },
@@ -41,18 +39,21 @@ async function assertUniqueSubject(
     select: { id: true },
   });
   if (duplicate) {
-    throw new Error("Ya existe un sujeto con ese nombre o slug.");
+    throw new Error("Ya existe un registro de este tipo con ese nombre o slug.");
   }
 }
 
-export async function createCompetitor(formData: FormData) {
+export async function createCompetitor(
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     "/admin/competidores/nuevo",
   );
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName);
+    await assertUniqueSubject("COMPETITOR", subject.slug, subject.displayName);
     const homeRegionId = String(formData.get("homeRegionId") ?? "") || null;
     const birthDate = optionalDate(formData.get("birthDate"));
     await db.$transaction(async (tx) => {
@@ -85,19 +86,23 @@ export async function createCompetitor(formData: FormData) {
       });
     });
   } catch (error) {
-    redirect(destination("/admin/competidores/nuevo", error));
+    return { error: actionError(error) };
   }
   redirect("/admin/competidores?success=created");
 }
 
-export async function updateCompetitor(id: string, formData: FormData) {
+export async function updateCompetitor(
+  id: string,
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     `/admin/competidores/${id}/editar`,
   );
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName, id);
+    await assertUniqueSubject("COMPETITOR", subject.slug, subject.displayName, id);
     const homeRegionId = String(formData.get("homeRegionId") ?? "") || null;
     const birthDate = optionalDate(formData.get("birthDate"));
     await db.$transaction(async (tx) => {
@@ -140,26 +145,32 @@ export async function updateCompetitor(id: string, formData: FormData) {
       });
     });
   } catch (error) {
-    redirect(destination(`/admin/competidores/${id}/editar`, error));
+    return { error: actionError(error) };
   }
   redirect("/admin/competidores?success=updated");
 }
 
-export async function createOrganization(formData: FormData) {
+export async function createOrganization(
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     "/admin/organizaciones/nueva",
   );
+  let createdId: string | null = null;
+  let returnTo = "";
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName);
+    await assertUniqueSubject("ORGANIZATION", subject.slug, subject.displayName);
     const organizationType = String(formData.get("organizationType"));
     const foundedOn = optionalDate(formData.get("foundedOn"));
     const websiteUrl = optionalUrl(formData.get("websiteUrl"));
     if (!["ORGANIZER", "MEDIA", "LEAGUE", "COLLECTIVE", "OTHER"].includes(organizationType)) {
       throw new Error("Seleccioná un tipo de organización válido.");
     }
-    await db.$transaction(async (tx) => {
+    returnTo = String(formData.get("returnTo") ?? "");
+    const created = await db.$transaction(async (tx) => {
       const created = await tx.subject.create({
         data: {
           ...subject,
@@ -196,21 +207,30 @@ export async function createOrganization(formData: FormData) {
           reason: "Alta administrativa de organización",
         },
       });
+      return created;
     });
+    createdId = created.id;
   } catch (error) {
-    redirect(destination("/admin/organizaciones/nueva", error));
+    return { error: actionError(error) };
+  }
+  if (returnTo === "/admin/competencias/nueva" && createdId) {
+    redirect(`${returnTo}?organizationId=${createdId}`);
   }
   redirect("/admin/organizaciones?success=created");
 }
 
-export async function updateOrganization(id: string, formData: FormData) {
+export async function updateOrganization(
+  id: string,
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     `/admin/organizaciones/${id}/editar`,
   );
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName, id);
+    await assertUniqueSubject("ORGANIZATION", subject.slug, subject.displayName, id);
     const organizationType = String(formData.get("organizationType"));
     const foundedOn = optionalDate(formData.get("foundedOn"));
     const websiteUrl = optionalUrl(formData.get("websiteUrl"));
@@ -268,28 +288,26 @@ export async function updateOrganization(id: string, formData: FormData) {
       });
     });
   } catch (error) {
-    redirect(destination(`/admin/organizaciones/${id}/editar`, error));
+    return { error: actionError(error) };
   }
   redirect("/admin/organizaciones?success=updated");
 }
 
-export async function createCompetition(formData: FormData) {
+export async function createCompetition(
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     "/admin/competencias/nueva",
   );
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName);
+    await assertUniqueSubject("COMPETITION", subject.slug, subject.displayName);
     const organizationId = String(formData.get("organizationId") ?? "");
     const shortName = String(formData.get("shortName") ?? "").trim() || null;
-    const defaultScope = String(formData.get("defaultScope"));
-    const defaultRegionId = String(formData.get("defaultRegionId") ?? "") || null;
     const foundedOn = optionalDate(formData.get("foundedOn"));
     if (!organizationId) throw new Error("Seleccioná una organización.");
-    if (!["LOCAL", "REGIONAL", "PROVINCIAL", "NATIONAL", "INTERNATIONAL", "OTHER"].includes(defaultScope)) {
-      throw new Error("Seleccioná un alcance válido.");
-    }
     await db.$transaction(async (tx) => {
       const created = await tx.subject.create({
         data: {
@@ -306,14 +324,9 @@ export async function createCompetition(formData: FormData) {
             create: {
               organizationId,
               shortName,
-              defaultScope: defaultScope as
-                | "LOCAL"
-                | "REGIONAL"
-                | "PROVINCIAL"
-                | "NATIONAL"
-                | "INTERNATIONAL"
-                | "OTHER",
-              defaultRegionId,
+              // Compatibilidad temporal del esquema: el alcance real se define en cada evento.
+              defaultScope: "LOCAL",
+              defaultRegionId: null,
               foundedOn,
             },
           },
@@ -332,28 +345,27 @@ export async function createCompetition(formData: FormData) {
       });
     });
   } catch (error) {
-    redirect(destination("/admin/competencias/nueva", error));
+    return { error: actionError(error) };
   }
   redirect("/admin/competencias?success=created");
 }
 
-export async function updateCompetition(id: string, formData: FormData) {
+export async function updateCompetition(
+  id: string,
+  _state: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
   const actor = await requireAdminCapability(
     SUBJECT_MANAGE,
     `/admin/competencias/${id}/editar`,
   );
   try {
     const subject = readSubjectForm(formData);
-    await assertUniqueSubject(subject.slug, subject.displayName, id);
+    await assertUniqueSubject("COMPETITION", subject.slug, subject.displayName, id);
     const organizationId = String(formData.get("organizationId") ?? "");
     const shortName = String(formData.get("shortName") ?? "").trim() || null;
-    const defaultScope = String(formData.get("defaultScope"));
-    const defaultRegionId = String(formData.get("defaultRegionId") ?? "") || null;
     const foundedOn = optionalDate(formData.get("foundedOn"));
     if (!organizationId) throw new Error("Seleccioná una organización.");
-    if (!["LOCAL", "REGIONAL", "PROVINCIAL", "NATIONAL", "INTERNATIONAL", "OTHER"].includes(defaultScope)) {
-      throw new Error("Seleccioná un alcance válido.");
-    }
     await db.$transaction(async (tx) => {
       const before = await tx.subject.findUniqueOrThrow({
         where: { id },
@@ -381,14 +393,6 @@ export async function updateCompetition(id: string, formData: FormData) {
             update: {
               organizationId,
               shortName,
-              defaultScope: defaultScope as
-                | "LOCAL"
-                | "REGIONAL"
-                | "PROVINCIAL"
-                | "NATIONAL"
-                | "INTERNATIONAL"
-                | "OTHER",
-              defaultRegionId,
               foundedOn,
             },
           },
@@ -406,8 +410,6 @@ export async function updateCompetition(id: string, formData: FormData) {
             ...subject,
             organizationId,
             shortName,
-            defaultScope,
-            defaultRegionId,
             foundedOn,
           },
           reason: "Edición administrativa de competencia",
@@ -415,7 +417,7 @@ export async function updateCompetition(id: string, formData: FormData) {
       });
     });
   } catch (error) {
-    redirect(destination(`/admin/competencias/${id}/editar`, error));
+    return { error: actionError(error) };
   }
   redirect("/admin/competencias?success=updated");
 }

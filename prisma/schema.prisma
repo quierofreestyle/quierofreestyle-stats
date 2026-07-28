@@ -370,7 +370,7 @@ model MediaAsset {
 model Subject {
   id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type          SubjectType
-  slug          String       @unique @db.Citext
+  slug          String       @db.Citext
   displayName   String       @map("display_name")
   status        RecordStatus @default(DRAFT)
   bio           String?
@@ -398,6 +398,7 @@ model Subject {
   declaredEventScopes  Event[]                  @relation("EventScopeDeclarant")
 
   @@index([type, status])
+  @@unique([type, slug])
   @@map("subject")
 }
 

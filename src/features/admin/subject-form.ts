@@ -7,6 +7,12 @@ export type SubjectFormValues = {
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
 };
 
+export type SubjectFormState = {
+  error?: string;
+};
+
+export const INITIAL_SUBJECT_FORM_STATE: SubjectFormState = {};
+
 export function normalizeSlug(value: string): string {
   return value
     .normalize("NFD")
