@@ -236,13 +236,22 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
     }
   }
 
+  const validateHttpUrl = (value: string, fieldLabel: string) => {
+    const normalizedValue = value.trim();
+    try {
+      const parsed = new URL(normalizedValue);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error();
+      }
+    } catch {
+      throw new Error(`${fieldLabel} debe ser una URL HTTP o HTTPS válida.`);
+    }
+    return normalizedValue;
+  };
+
   const sources = parseJson<SourceInput>(formData.get("sources"), "las fuentes").map(
     (source, index) => {
-      try {
-        new URL(source.url);
-      } catch {
-        throw new Error(`La URL de la fuente ${index + 1} no es válida.`);
-      }
+      const url = validateHttpUrl(source.url, `La URL de la fuente ${index + 1}`);
       if (!["OFFICIAL", "SOCIAL", "VIDEO", "DOCUMENT", "OTHER"].includes(source.type)) {
         throw new Error(`El tipo de fuente ${index + 1} no es válido.`);
       }
@@ -250,7 +259,7 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
         throw new Error(`El propósito de la fuente ${index + 1} no es válido.`);
       }
       return {
-        url: source.url.trim(),
+        url,
         title: source.title?.trim() || null,
         publisher: source.publisher?.trim() || null,
         type: source.type,
@@ -258,6 +267,7 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
       };
     },
   );
+  const scopeSourceUrlInput = optionalText(formData.get("scopeSourceUrl"));
 
   return {
     competitionId,
@@ -275,7 +285,9 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
     locationRegionId: optionalText(formData.get("locationRegionId")),
     scopeRegionId: optionalText(formData.get("scopeRegionId")),
     scopeDeclaredById: optionalText(formData.get("scopeDeclaredById")),
-    scopeSourceUrl: optionalText(formData.get("scopeSourceUrl")),
+    scopeSourceUrl: scopeSourceUrlInput
+      ? validateHttpUrl(scopeSourceUrlInput, "La fuente del alcance")
+      : null,
     scopeNotes: optionalText(formData.get("scopeNotes")),
     format,
     resolution,

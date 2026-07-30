@@ -144,4 +144,49 @@ describe("formulario administrativo de eventos", () => {
       { type: "FINALIST", position: 1 },
     ]);
   });
+
+  it("acepta solamente fuentes HTTP o HTTPS", () => {
+    const form = validForm();
+    form.set(
+      "sources",
+      JSON.stringify([
+        {
+          url: "javascript:alert(1)",
+          title: "",
+          publisher: "",
+          type: "OTHER",
+          purpose: "GENERAL",
+        },
+      ]),
+    );
+
+    expect(() => readEventForm(form)).toThrow(/HTTP o HTTPS/i);
+
+    form.set(
+      "sources",
+      JSON.stringify([
+        {
+          url: " https://example.com/resultado ",
+          title: "",
+          publisher: "",
+          type: "OFFICIAL",
+          purpose: "RESULT",
+        },
+      ]),
+    );
+    expect(readEventForm(form).sources[0].url).toBe(
+      "https://example.com/resultado",
+    );
+  });
+
+  it("valida la fuente del alcance del lado servidor", () => {
+    const form = validForm();
+    form.set("scopeSourceUrl", "ftp://example.com/alcance");
+    expect(() => readEventForm(form)).toThrow(/fuente del alcance.*HTTP o HTTPS/i);
+
+    form.set("scopeSourceUrl", "https://example.com/alcance");
+    expect(readEventForm(form).scopeSourceUrl).toBe(
+      "https://example.com/alcance",
+    );
+  });
 });

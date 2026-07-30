@@ -260,7 +260,16 @@ export async function updateEvent(
         where: { placement: { eventId: id } },
       });
       await tx.placement.deleteMany({ where: { eventId: id } });
+      const previousSourceIds = before.sources.map(({ sourceId }) => sourceId);
       await tx.eventSource.deleteMany({ where: { eventId: id } });
+      if (previousSourceIds.length) {
+        await tx.source.deleteMany({
+          where: {
+            id: { in: previousSourceIds },
+            events: { none: {} },
+          },
+        });
+      }
       await tx.event.update({
         where: { id, status: "DRAFT" },
         data: {
