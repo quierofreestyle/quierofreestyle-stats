@@ -29,6 +29,8 @@ export default function RootLayout({
           </Link>
           <nav aria-label="Navegación principal">
             <Link href="/competencias">Competencias</Link>
+            <Link href="/eventos">Eventos</Link>
+            <Link href="/competidores">Competidores</Link>
           </nav>
         </header>
         {children}
