@@ -1,0 +1,1148 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SubjectType {
+  COMPETITOR
+  COMPETITION
+  ORGANIZATION
+}
+
+enum RecordStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  MERGED
+}
+
+enum SubjectNameKind {
+  PRIMARY
+  ALIAS
+  PREVIOUS_NAME
+  ABBREVIATION
+}
+
+enum RegionType {
+  COUNTRY
+  PROVINCE
+  CITY
+  NEIGHBORHOOD
+}
+
+enum CompetitiveScope {
+  LOCAL
+  REGIONAL
+  PROVINCIAL
+  NATIONAL
+  INTERNATIONAL
+  OTHER
+}
+
+enum DatePrecision {
+  DAY
+  MONTH
+  YEAR
+  UNKNOWN
+}
+
+enum OrganizationType {
+  ORGANIZER
+  MEDIA
+  LEAGUE
+  COLLECTIVE
+  OTHER
+}
+
+enum ProfileFieldVisibility {
+  PUBLIC
+  HIDDEN
+}
+
+enum SeasonStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CORRECTED
+  ANNULLED
+}
+
+enum EventResolution {
+  DECIDED
+  SHARED_CHAMPIONSHIP
+  UNDECIDED
+}
+
+enum EventFormat {
+  SOLO
+  DUO
+  TRIO
+  OTHER
+}
+
+enum PlacementType {
+  CHAMPION
+  RUNNER_UP
+  FINALIST
+  OTHER
+}
+
+enum PlacementStatus {
+  ACTIVE
+  ANNULLED
+}
+
+enum SourceType {
+  OFFICIAL
+  SOCIAL
+  VIDEO
+  DOCUMENT
+  OTHER
+}
+
+enum SourcePurpose {
+  RESULT
+  DATE
+  PARTICIPANTS
+  SCOPE
+  GENERAL
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum SubjectAccessLevel {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum BadgeKind {
+  UNIQUE
+  ACHIEVEMENT
+  TIERED
+}
+
+enum BadgeAssignmentMode {
+  AUTOMATIC
+  EDITORIAL
+}
+
+enum PermanenceMode {
+  PERMANENT
+  TEMPORARY
+}
+
+enum UniqueTiePolicy {
+  FIRST_REACHED_NO_INITIAL_HOLDER
+}
+
+enum BadgeDefinitionStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum MetricValueType {
+  INTEGER
+  DECIMAL
+  BOOLEAN
+  DATE
+}
+
+enum RuleAggregation {
+  COUNT
+  SUM
+  MAX
+  BOOLEAN
+}
+
+enum RuleOperator {
+  GTE
+  EQ
+  TOP_ONE
+  FIRST
+}
+
+enum RuleStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum BadgeInstanceStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum BadgeScopeType {
+  GLOBAL
+  COMPETITION
+  ORGANIZATION
+  SEASON
+  REGION
+}
+
+enum BadgePeriodType {
+  NONE
+  MONTH
+  YEAR
+}
+
+enum BadgeAwardStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum TierAchievementStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum RecalculationTrigger {
+  EVENT_PUBLISHED
+  EVENT_CORRECTED
+  EVENT_ANNULLED
+  RULE_ACTIVATED
+  HISTORICAL_DATA_ADDED
+  FULL_REBUILD
+}
+
+enum RecalculationStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  PARTIAL
+}
+
+enum RecalculationMode {
+  APPLY
+  DRY_RUN
+}
+
+enum RecalculationChangeType {
+  AWARD
+  REVOKE
+  TRANSFER
+  LEVEL_UP
+  LEVEL_DOWN
+  RANK_CHANGE
+  NO_HOLDER
+}
+
+enum ActorType {
+  USER
+  SYSTEM
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum SubmissionOperation {
+  CREATE
+  UPDATE
+  ANNUL
+}
+
+enum MigrationRecordStatus {
+  MAPPED
+  SKIPPED
+  ERROR
+}
+
+enum MigrationIssueStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+}
+
+enum MediaKind {
+  AVATAR
+  LOGO
+  BADGE
+  SHARE
+  OTHER
+}
+
+enum ShareFormat {
+  POST
+  STORY
+}
+
+enum ShareStatus {
+  PENDING
+  READY
+  FAILED
+  DELETED
+}
+
+enum SocialProvider {
+  INSTAGRAM
+}
+
+enum SocialConnectionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+model AppUser {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authSubject     String     @unique @map("auth_subject")
+  email           String?    @db.Citext
+  emailVerifiedAt DateTime?  @map("email_verified_at") @db.Timestamptz(3)
+  status          UserStatus @default(INVITED)
+  lastLoginAt     DateTime?  @map("last_login_at") @db.Timestamptz(3)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  createdMediaAssets  MediaAsset[]             @relation("MediaCreatedBy")
+  userRoles           UserRole[]
+  profileClaims       ProfileClaim[]           @relation("ClaimRequester")
+  reviewedClaims      ProfileClaim[]           @relation("ClaimReviewer")
+  subjectManagements  SubjectManager[]         @relation("SubjectManagerUser")
+  grantedManagements  SubjectManager[]         @relation("SubjectManagerGrantor")
+  badgeDefinitions    BadgeDefinition[]        @relation("BadgeDefinitionCreator")
+  ruleVersions        BadgeRuleVersion[]       @relation("RuleCreator")
+  badgeAwards         BadgeAward[]             @relation("BadgeAwardAssigner")
+  profilePreferences  ProfileBadgePreference[] @relation("PreferenceUpdater")
+  recalculationRuns   RecalculationRun[]       @relation("RecalculationInitiator")
+  submissions         DataSubmission[]         @relation("SubmissionAuthor")
+  reviewedSubmissions DataSubmission[]         @relation("SubmissionReviewer")
+  auditLogs           AuditLog[]
+  resolvedIssues      MigrationIssue[]         @relation("IssueResolver")
+  socialConnections   SocialConnection[]
+
+  @@unique([email], map: "app_user_email_key")
+  @@map("app_user")
+}
+
+model MediaAsset {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storageKey  String    @unique @map("storage_key")
+  mimeType    String    @map("mime_type")
+  sizeBytes   BigInt    @map("size_bytes")
+  width       Int?
+  height      Int?
+  kind        MediaKind
+  createdById String?   @map("created_by_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  createdBy      AppUser?     @relation("MediaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  avatarSubjects Subject[]    @relation("SubjectAvatar")
+  tierAssets     BadgeTier[]
+  shareAssets    ShareAsset[] @relation("ShareMedia")
+
+  @@map("media_asset")
+}
+
+model Subject {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          SubjectType
+  slug          String       @db.Citext
+  displayName   String       @map("display_name")
+  status        RecordStatus @default(DRAFT)
+  bio           String?
+  avatarAssetId String?      @map("avatar_asset_id") @db.Uuid
+  mergedIntoId  String?      @map("merged_into_id") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  avatar               MediaAsset?              @relation("SubjectAvatar", fields: [avatarAssetId], references: [id], onDelete: SetNull)
+  mergedInto           Subject?                 @relation("SubjectMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
+  mergedSubjects       Subject[]                @relation("SubjectMerge")
+  names                SubjectName[]
+  competitor           Competitor?
+  competition          Competition?
+  organization         Organization?
+  profileClaims        ProfileClaim[]
+  managers             SubjectManager[]
+  badgeAwards          BadgeAward[]
+  badgeHoldings        BadgeHoldingPeriod[]
+  badgeProgress        BadgeProgress[]
+  tierAchievements     TierAchievement[]
+  badgePreferences     ProfileBadgePreference[]
+  recalculationChanges RecalculationChange[]
+  shareAssets          ShareAsset[]
+  declaredEventScopes  Event[]                  @relation("EventScopeDeclarant")
+
+  @@index([type, status])
+  @@unique([type, slug])
+  @@map("subject")
+}
+
+model SubjectName {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subjectId       String          @map("subject_id") @db.Uuid
+  value           String
+  normalizedValue String          @map("normalized_value") @db.Citext
+  kind            SubjectNameKind
+  validFrom       DateTime?       @map("valid_from") @db.Date
+  validTo         DateTime?       @map("valid_to") @db.Date
+  isSearchable    Boolean         @default(true) @map("is_searchable")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@index([normalizedValue])
+  @@index([subjectId, kind])
+  @@map("subject_name")
+}
+
+model Region {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentId  String?    @map("parent_id") @db.Uuid
+  type      RegionType
+  name      String
+  code      String?
+  slug      String     @db.Citext
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  parent              Region?       @relation("RegionHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children            Region[]      @relation("RegionHierarchy")
+  competitors         Competitor[]
+  competitionDefaults Competition[] @relation("CompetitionDefaultRegion")
+  eventLocations      Event[]       @relation("EventLocationRegion")
+  eventScopes         Event[]       @relation("EventScopeRegion")
+  venues              Venue[]
+  badgeScopes         BadgeScope[]
+
+  @@unique([parentId, slug])
+  @@index([type, name])
+  @@map("region")
+}
+
+model Competitor {
+  subjectId           String                 @id @map("subject_id") @db.Uuid
+  homeRegionId        String?                @map("home_region_id") @db.Uuid
+  birthDate           DateTime?              @map("birth_date") @db.Date
+  birthDateVisibility ProfileFieldVisibility @default(HIDDEN) @map("birth_date_visibility")
+  locationVisibility  ProfileFieldVisibility @default(PUBLIC) @map("location_visibility")
+
+  subject    Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  homeRegion Region?           @relation(fields: [homeRegionId], references: [id], onDelete: SetNull)
+  placements PlacementMember[]
+
+  @@map("competitor")
+}
+
+model Organization {
+  subjectId        String           @id @map("subject_id") @db.Uuid
+  organizationType OrganizationType @default(ORGANIZER) @map("organization_type")
+  foundedOn        DateTime?        @map("founded_on") @db.Date
+  websiteUrl       String?          @map("website_url")
+
+  subject      Subject       @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  competitions Competition[]
+  badgeScopes  BadgeScope[]
+
+  @@map("organization")
+}
+
+model Competition {
+  subjectId       String           @id @map("subject_id") @db.Uuid
+  organizationId  String           @map("organization_id") @db.Uuid
+  shortName       String?          @map("short_name")
+  defaultScope    CompetitiveScope @default(LOCAL) @map("default_scope")
+  defaultRegionId String?          @map("default_region_id") @db.Uuid
+  foundedOn       DateTime?        @map("founded_on") @db.Date
+
+  subject       Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  organization  Organization @relation(fields: [organizationId], references: [subjectId], onDelete: Restrict)
+  defaultRegion Region?      @relation("CompetitionDefaultRegion", fields: [defaultRegionId], references: [id], onDelete: SetNull)
+  seasons       Season[]
+  events        Event[]
+  badgeScopes   BadgeScope[]
+
+  @@index([organizationId])
+  @@map("competition")
+}
+
+model Venue {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  regionId  String   @map("region_id") @db.Uuid
+  name      String
+  address   String?
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  region Region  @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  events Event[]
+
+  @@index([regionId, name])
+  @@map("venue")
+}
+
+model Season {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  competitionId String       @map("competition_id") @db.Uuid
+  name          String
+  startsOn      DateTime?    @map("starts_on") @db.Date
+  endsOn        DateTime?    @map("ends_on") @db.Date
+  status        SeasonStatus @default(DRAFT)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  competition Competition  @relation(fields: [competitionId], references: [subjectId], onDelete: Restrict)
+  events      Event[]
+  badgeScopes BadgeScope[]
+
+  @@unique([competitionId, name])
+  @@unique([id, competitionId])
+  @@map("season")
+}
+
+model Event {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  competitionId     String           @map("competition_id") @db.Uuid
+  seasonId          String?          @map("season_id") @db.Uuid
+  venueId           String?          @map("venue_id") @db.Uuid
+  locationRegionId  String?          @map("location_region_id") @db.Uuid
+  scopeRegionId     String?          @map("scope_region_id") @db.Uuid
+  slug              String           @db.Citext
+  title             String
+  editionNumber     Int?             @map("edition_number")
+  eventYear         Int?             @map("event_year")
+  eventMonth        Int?             @map("event_month")
+  eventDay          Int?             @map("event_day")
+  occurredOn        DateTime?        @map("occurred_on") @db.Date
+  datePrecision     DatePrecision    @default(UNKNOWN) @map("date_precision")
+  officialScope     CompetitiveScope @default(LOCAL) @map("official_scope")
+  scopeDeclaredById String?          @map("scope_declared_by_id") @db.Uuid
+  scopeSourceUrl    String?          @map("scope_source_url")
+  scopeNotes        String?          @map("scope_notes")
+  format            EventFormat      @default(SOLO)
+  resolution        EventResolution  @default(DECIDED)
+  status            EventStatus      @default(DRAFT)
+  publishedAt       DateTime?        @map("published_at") @db.Timestamptz(3)
+  publishedById     String?          @map("published_by_id") @db.Uuid
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  competition      Competition          @relation(fields: [competitionId], references: [subjectId], onDelete: Restrict)
+  season           Season?              @relation(fields: [seasonId, competitionId], references: [id, competitionId], onDelete: Restrict)
+  venue            Venue?               @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  locationRegion   Region?              @relation("EventLocationRegion", fields: [locationRegionId], references: [id], onDelete: SetNull)
+  scopeRegion      Region?              @relation("EventScopeRegion", fields: [scopeRegionId], references: [id], onDelete: SetNull)
+  scopeDeclaredBy  Subject?             @relation("EventScopeDeclarant", fields: [scopeDeclaredById], references: [id], onDelete: SetNull)
+  placements       Placement[]
+  sources          EventSource[]
+  badgeAwards      BadgeAward[]
+  acquiredHoldings BadgeHoldingPeriod[] @relation("HoldingAcquiredEvent")
+  endedHoldings    BadgeHoldingPeriod[] @relation("HoldingEndedEvent")
+  tierAchievements TierAchievement[]
+
+  @@unique([competitionId, slug])
+  @@index([competitionId, eventYear, eventMonth, eventDay])
+  @@index([status, officialScope])
+  @@map("event")
+}
+
+model Placement {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId    String          @map("event_id") @db.Uuid
+  position   Int
+  slot       Int             @default(1)
+  type       PlacementType
+  groupLabel String?         @map("group_label")
+  status     PlacementStatus @default(ACTIVE)
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  event   Event             @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  members PlacementMember[]
+
+  @@unique([eventId, position, slot])
+  @@index([eventId, type, status])
+  @@map("placement")
+}
+
+model PlacementMember {
+  placementId        String  @map("placement_id") @db.Uuid
+  competitorId       String  @map("competitor_id") @db.Uuid
+  memberOrder        Int     @default(1) @map("member_order")
+  displayNameAtEvent String? @map("display_name_at_event")
+
+  placement  Placement  @relation(fields: [placementId], references: [id], onDelete: Restrict)
+  competitor Competitor @relation(fields: [competitorId], references: [subjectId], onDelete: Restrict)
+
+  @@id([placementId, competitorId])
+  @@index([competitorId])
+  @@map("placement_member")
+}
+
+model Source {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url        String
+  title      String?
+  publisher  String?
+  type       SourceType
+  isArchived Boolean    @default(false) @map("is_archived")
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  events EventSource[]
+
+  @@index([url])
+  @@map("source")
+}
+
+model EventSource {
+  eventId  String        @map("event_id") @db.Uuid
+  sourceId String        @map("source_id") @db.Uuid
+  purpose  SourcePurpose @default(GENERAL)
+
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  @@id([eventId, sourceId, purpose])
+  @@map("event_source")
+}
+
+model Role {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String  @unique
+  name        String
+  description String?
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String  @unique
+  name        String
+  description String?
+
+  roles RolePermission[]
+
+  @@map("permission")
+}
+
+model UserRole {
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  grantedAt DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+  grantedBy String?  @map("granted_by") @db.Uuid
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role Role    @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@map("user_role")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+model ProfileClaim {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  subjectId    String      @map("subject_id") @db.Uuid
+  status       ClaimStatus @default(SUBMITTED)
+  evidence     Json?
+  privateNotes String?     @map("private_notes")
+  reviewedById String?     @map("reviewed_by_id") @db.Uuid
+  reviewedAt   DateTime?   @map("reviewed_at") @db.Timestamptz(3)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user       AppUser  @relation("ClaimRequester", fields: [userId], references: [id], onDelete: Restrict)
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  reviewedBy AppUser? @relation("ClaimReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([subjectId, status])
+  @@index([userId, status])
+  @@map("profile_claim")
+}
+
+model SubjectManager {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String             @map("user_id") @db.Uuid
+  subjectId   String             @map("subject_id") @db.Uuid
+  accessLevel SubjectAccessLevel @map("access_level")
+  validFrom   DateTime           @default(now()) @map("valid_from") @db.Timestamptz(3)
+  validTo     DateTime?          @map("valid_to") @db.Timestamptz(3)
+  grantedById String?            @map("granted_by_id") @db.Uuid
+
+  user      AppUser  @relation("SubjectManagerUser", fields: [userId], references: [id], onDelete: Restrict)
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  grantedBy AppUser? @relation("SubjectManagerGrantor", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, subjectId])
+  @@index([subjectId, validTo])
+  @@map("subject_manager")
+}
+
+model BadgeDefinition {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                String                @unique
+  kind                BadgeKind
+  assignmentMode      BadgeAssignmentMode   @map("assignment_mode")
+  nameTemplate        String                @map("name_template")
+  descriptionTemplate String                @map("description_template")
+  recipientType       SubjectType           @map("recipient_type")
+  permanenceMode      PermanenceMode        @default(PERMANENT) @map("permanence_mode")
+  tiePolicy           UniqueTiePolicy?      @map("tie_policy")
+  status              BadgeDefinitionStatus @default(DRAFT)
+  createdById         String                @map("created_by_id") @db.Uuid
+  archivedAt          DateTime?             @map("archived_at") @db.Timestamptz(3)
+  createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  createdBy    AppUser            @relation("BadgeDefinitionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  ruleVersions BadgeRuleVersion[]
+  instances    BadgeInstance[]
+
+  @@index([recipientType, status])
+  @@map("badge_definition")
+}
+
+model MetricDefinition {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String          @unique
+  name              String
+  description       String
+  valueType         MetricValueType @map("value_type")
+  implementationKey String          @map("implementation_key")
+  version           Int             @default(1)
+  isActive          Boolean         @default(true) @map("is_active")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  recipientTypes MetricRecipientType[]
+  ruleVersions   BadgeRuleVersion[]
+
+  @@map("metric_definition")
+}
+
+model MetricRecipientType {
+  metricId      String      @map("metric_id") @db.Uuid
+  recipientType SubjectType @map("recipient_type")
+
+  metric MetricDefinition @relation(fields: [metricId], references: [id], onDelete: Restrict)
+
+  @@id([metricId, recipientType])
+  @@map("metric_recipient_type")
+}
+
+model BadgeRuleVersion {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeDefinitionId String          @map("badge_definition_id") @db.Uuid
+  metricId          String          @map("metric_id") @db.Uuid
+  versionNumber     Int             @map("version_number")
+  aggregation       RuleAggregation
+  operator          RuleOperator
+  baseThreshold     Decimal?        @map("base_threshold") @db.Decimal(18, 4)
+  config            Json            @default("{}")
+  effectiveFrom     DateTime?       @map("effective_from") @db.Date
+  effectiveTo       DateTime?       @map("effective_to") @db.Date
+  status            RuleStatus      @default(DRAFT)
+  createdById       String          @map("created_by_id") @db.Uuid
+  reason            String
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  badgeDefinition  BadgeDefinition      @relation(fields: [badgeDefinitionId], references: [id], onDelete: Restrict)
+  metric           MetricDefinition     @relation(fields: [metricId], references: [id], onDelete: Restrict)
+  createdBy        AppUser              @relation("RuleCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  tiers            BadgeTier[]
+  awards           BadgeAward[]
+  holdingPeriods   BadgeHoldingPeriod[]
+  progress         BadgeProgress[]
+  tierAchievements TierAchievement[]
+
+  @@unique([badgeDefinitionId, versionNumber])
+  @@index([badgeDefinitionId, status, effectiveFrom])
+  @@map("badge_rule_version")
+}
+
+model BadgeTier {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleVersionId String  @map("rule_version_id") @db.Uuid
+  rank          Int
+  code          String
+  displayName   String  @map("display_name")
+  threshold     Decimal @db.Decimal(18, 4)
+  assetId       String? @map("asset_id") @db.Uuid
+  color         String?
+
+  ruleVersion     BadgeRuleVersion  @relation(fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  asset           MediaAsset?       @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  currentProgress BadgeProgress[]
+  achievements    TierAchievement[]
+
+  @@unique([ruleVersionId, rank])
+  @@unique([ruleVersionId, code])
+  @@map("badge_tier")
+}
+
+model BadgeInstance {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeDefinitionId String              @map("badge_definition_id") @db.Uuid
+  slug              String              @unique @db.Citext
+  displayName       String              @map("display_name")
+  description       String
+  status            BadgeInstanceStatus @default(DRAFT)
+  publishedAt       DateTime?           @map("published_at") @db.Timestamptz(3)
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  definition   BadgeDefinition          @relation(fields: [badgeDefinitionId], references: [id], onDelete: Restrict)
+  scope        BadgeScope?
+  awards       BadgeAward[]
+  holdings     BadgeHoldingPeriod[]
+  progress     BadgeProgress[]
+  achievements TierAchievement[]
+  preferences  ProfileBadgePreference[]
+  changes      RecalculationChange[]
+  shareAssets  ShareAsset[]
+
+  @@index([badgeDefinitionId, status])
+  @@map("badge_instance")
+}
+
+model BadgeScope {
+  badgeInstanceId  String            @id @map("badge_instance_id") @db.Uuid
+  scopeType        BadgeScopeType    @map("scope_type")
+  competitionId    String?           @map("competition_id") @db.Uuid
+  organizationId   String?           @map("organization_id") @db.Uuid
+  seasonId         String?           @map("season_id") @db.Uuid
+  regionId         String?           @map("region_id") @db.Uuid
+  competitiveScope CompetitiveScope? @map("competitive_scope")
+  periodType       BadgePeriodType   @default(NONE) @map("period_type")
+  periodYear       Int?              @map("period_year")
+  periodMonth      Int?              @map("period_month")
+
+  badgeInstance BadgeInstance @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  competition   Competition?  @relation(fields: [competitionId], references: [subjectId], onDelete: Restrict)
+  organization  Organization? @relation(fields: [organizationId], references: [subjectId], onDelete: Restrict)
+  season        Season?       @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  region        Region?       @relation(fields: [regionId], references: [id], onDelete: Restrict)
+
+  @@index([scopeType, competitionId, organizationId, seasonId, regionId])
+  @@map("badge_scope")
+}
+
+model BadgeAward {
+  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeInstanceId     String           @map("badge_instance_id") @db.Uuid
+  recipientSubjectId  String           @map("recipient_subject_id") @db.Uuid
+  ruleVersionId       String?          @map("rule_version_id") @db.Uuid
+  sourceEventId       String?          @map("source_event_id") @db.Uuid
+  awardedOn           DateTime         @map("awarded_on") @db.Date
+  expiresAt           DateTime?        @map("expires_at") @db.Timestamptz(3)
+  status              BadgeAwardStatus @default(ACTIVE)
+  assignedById        String?          @map("assigned_by_id") @db.Uuid
+  publicJustification String?          @map("public_justification")
+  privateNotes        String?          @map("private_notes")
+  evidence            Json             @default("{}")
+  revokedAt           DateTime?        @map("revoked_at") @db.Timestamptz(3)
+  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  badgeInstance BadgeInstance     @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  recipient     Subject           @relation(fields: [recipientSubjectId], references: [id], onDelete: Restrict)
+  ruleVersion   BadgeRuleVersion? @relation(fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  sourceEvent   Event?            @relation(fields: [sourceEventId], references: [id], onDelete: Restrict)
+  assignedBy    AppUser?          @relation("BadgeAwardAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@index([badgeInstanceId, recipientSubjectId, status])
+  @@index([recipientSubjectId, awardedOn])
+  @@map("badge_award")
+}
+
+model BadgeHoldingPeriod {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeInstanceId String    @map("badge_instance_id") @db.Uuid
+  holderSubjectId String    @map("holder_subject_id") @db.Uuid
+  ruleVersionId   String    @map("rule_version_id") @db.Uuid
+  startsOn        DateTime  @map("starts_on") @db.Date
+  endsOn          DateTime? @map("ends_on") @db.Date
+  acquiredEventId String?   @map("acquired_event_id") @db.Uuid
+  endedEventId    String?   @map("ended_event_id") @db.Uuid
+  metricValue     Decimal   @map("metric_value") @db.Decimal(18, 4)
+  reachedValueOn  DateTime  @map("reached_value_on") @db.Date
+  evidence        Json      @default("{}")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  badgeInstance BadgeInstance    @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  holder        Subject          @relation(fields: [holderSubjectId], references: [id], onDelete: Restrict)
+  ruleVersion   BadgeRuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  acquiredEvent Event?           @relation("HoldingAcquiredEvent", fields: [acquiredEventId], references: [id], onDelete: Restrict)
+  endedEvent    Event?           @relation("HoldingEndedEvent", fields: [endedEventId], references: [id], onDelete: Restrict)
+
+  @@index([badgeInstanceId, startsOn])
+  @@index([holderSubjectId, startsOn])
+  @@map("badge_holding_period")
+}
+
+model BadgeProgress {
+  badgeInstanceId    String    @map("badge_instance_id") @db.Uuid
+  recipientSubjectId String    @map("recipient_subject_id") @db.Uuid
+  ruleVersionId      String    @map("rule_version_id") @db.Uuid
+  currentTierId      String?   @map("current_tier_id") @db.Uuid
+  metricValue        Decimal   @map("metric_value") @db.Decimal(18, 4)
+  reachedValueOn     DateTime? @map("reached_value_on") @db.Date
+  calculatedAt       DateTime  @map("calculated_at") @db.Timestamptz(3)
+  runId              String    @map("run_id") @db.Uuid
+
+  badgeInstance BadgeInstance    @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  recipient     Subject          @relation(fields: [recipientSubjectId], references: [id], onDelete: Restrict)
+  ruleVersion   BadgeRuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  currentTier   BadgeTier?       @relation(fields: [currentTierId], references: [id], onDelete: Restrict)
+  run           RecalculationRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+
+  @@id([badgeInstanceId, recipientSubjectId])
+  @@index([badgeInstanceId, metricValue, reachedValueOn])
+  @@map("badge_progress")
+}
+
+model TierAchievement {
+  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeInstanceId    String                @map("badge_instance_id") @db.Uuid
+  recipientSubjectId String                @map("recipient_subject_id") @db.Uuid
+  tierId             String                @map("tier_id") @db.Uuid
+  ruleVersionId      String                @map("rule_version_id") @db.Uuid
+  sourceEventId      String?               @map("source_event_id") @db.Uuid
+  achievedOn         DateTime              @map("achieved_on") @db.Date
+  status             TierAchievementStatus @default(ACTIVE)
+  revokedAt          DateTime?             @map("revoked_at") @db.Timestamptz(3)
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  badgeInstance BadgeInstance    @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  recipient     Subject          @relation(fields: [recipientSubjectId], references: [id], onDelete: Restrict)
+  tier          BadgeTier        @relation(fields: [tierId], references: [id], onDelete: Restrict)
+  ruleVersion   BadgeRuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  sourceEvent   Event?           @relation(fields: [sourceEventId], references: [id], onDelete: Restrict)
+
+  @@unique([badgeInstanceId, recipientSubjectId, tierId, ruleVersionId])
+  @@map("tier_achievement")
+}
+
+model ProfileBadgePreference {
+  subjectId       String   @map("subject_id") @db.Uuid
+  badgeInstanceId String   @map("badge_instance_id") @db.Uuid
+  isVisible       Boolean  @default(true) @map("is_visible")
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  sortOrder       Int?     @map("sort_order")
+  updatedById     String   @map("updated_by_id") @db.Uuid
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  subject       Subject       @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  badgeInstance BadgeInstance @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  updatedBy     AppUser       @relation("PreferenceUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@id([subjectId, badgeInstanceId])
+  @@map("profile_badge_preference")
+}
+
+model RecalculationRun {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  correlationId   String               @unique @map("correlation_id") @db.Uuid
+  triggerType     RecalculationTrigger @map("trigger_type")
+  triggerEntityId String?              @map("trigger_entity_id") @db.Uuid
+  mode            RecalculationMode    @default(APPLY)
+  status          RecalculationStatus  @default(QUEUED)
+  initiatedById   String?              @map("initiated_by_id") @db.Uuid
+  queuedAt        DateTime             @default(now()) @map("queued_at") @db.Timestamptz(3)
+  startedAt       DateTime?            @map("started_at") @db.Timestamptz(3)
+  finishedAt      DateTime?            @map("finished_at") @db.Timestamptz(3)
+  summary         Json?
+  error           Json?
+
+  initiatedBy AppUser?              @relation("RecalculationInitiator", fields: [initiatedById], references: [id], onDelete: SetNull)
+  changes     RecalculationChange[]
+  progress    BadgeProgress[]
+
+  @@index([status, queuedAt])
+  @@map("recalculation_run")
+}
+
+model RecalculationChange {
+  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId           String                  @map("run_id") @db.Uuid
+  badgeInstanceId String?                 @map("badge_instance_id") @db.Uuid
+  subjectId       String?                 @map("subject_id") @db.Uuid
+  changeType      RecalculationChangeType @map("change_type")
+  beforeState     Json?                   @map("before_state")
+  afterState      Json?                   @map("after_state")
+  appliedAt       DateTime?               @map("applied_at") @db.Timestamptz(3)
+  createdAt       DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  run           RecalculationRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+  badgeInstance BadgeInstance?   @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  subject       Subject?         @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@index([runId, changeType])
+  @@map("recalculation_change")
+}
+
+model DataSubmission {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submittedById String           @map("submitted_by_id") @db.Uuid
+  status        SubmissionStatus @default(DRAFT)
+  summary       String
+  reviewedById  String?          @map("reviewed_by_id") @db.Uuid
+  reviewedAt    DateTime?        @map("reviewed_at") @db.Timestamptz(3)
+  reviewNotes   String?          @map("review_notes")
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  submittedBy AppUser          @relation("SubmissionAuthor", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedBy  AppUser?         @relation("SubmissionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  items       SubmissionItem[]
+
+  @@index([status, createdAt])
+  @@map("data_submission")
+}
+
+model SubmissionItem {
+  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId     String              @map("submission_id") @db.Uuid
+  operation        SubmissionOperation
+  entityKind       String              @map("entity_kind")
+  entityId         String?             @map("entity_id") @db.Uuid
+  beforePayload    Json?               @map("before_payload")
+  proposedPayload  Json                @map("proposed_payload")
+  validationErrors Json?               @map("validation_errors")
+  itemOrder        Int                 @map("item_order")
+
+  submission DataSubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+
+  @@unique([submissionId, itemOrder])
+  @@map("submission_item")
+}
+
+model AuditLog {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt    DateTime  @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  actorType     ActorType @map("actor_type")
+  actorUserId   String?   @map("actor_user_id") @db.Uuid
+  action        String
+  entityKind    String    @map("entity_kind")
+  entityId      String    @map("entity_id") @db.Uuid
+  beforeData    Json?     @map("before_data")
+  afterData     Json?     @map("after_data")
+  reason        String?
+  correlationId String?   @map("correlation_id") @db.Uuid
+  ipHash        String?   @map("ip_hash")
+  userAgent     String?   @map("user_agent")
+
+  actorUser AppUser? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityKind, entityId, occurredAt])
+  @@index([correlationId])
+  @@map("audit_log")
+}
+
+model LegacyRecordMap {
+  sourceSystem String                @map("source_system")
+  entityKind   String                @map("entity_kind")
+  legacyId     String                @map("legacy_id")
+  targetId     String?               @map("target_id") @db.Uuid
+  payloadHash  String                @map("payload_hash")
+  batchId      String                @map("batch_id") @db.Uuid
+  status       MigrationRecordStatus
+  migratedAt   DateTime              @default(now()) @map("migrated_at") @db.Timestamptz(3)
+
+  @@id([sourceSystem, entityKind, legacyId])
+  @@index([targetId])
+  @@map("legacy_record_map")
+}
+
+model MigrationIssue {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batchId         String               @map("batch_id") @db.Uuid
+  entityKind      String               @map("entity_kind")
+  legacyKey       String               @map("legacy_key")
+  issueType       String               @map("issue_type")
+  payload         Json
+  status          MigrationIssueStatus @default(OPEN)
+  resolvedById    String?              @map("resolved_by_id") @db.Uuid
+  resolvedAt      DateTime?            @map("resolved_at") @db.Timestamptz(3)
+  resolutionNotes String?              @map("resolution_notes")
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  resolvedBy AppUser? @relation("IssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([batchId, status])
+  @@map("migration_issue")
+}
+
+model ShareAsset {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  badgeInstanceId    String      @map("badge_instance_id") @db.Uuid
+  recipientSubjectId String      @map("recipient_subject_id") @db.Uuid
+  mediaAssetId       String?     @map("media_asset_id") @db.Uuid
+  format             ShareFormat
+  status             ShareStatus @default(PENDING)
+  payloadHash        String      @map("payload_hash")
+  generatedAt        DateTime?   @map("generated_at") @db.Timestamptz(3)
+  expiresAt          DateTime?   @map("expires_at") @db.Timestamptz(3)
+  createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  badgeInstance BadgeInstance @relation(fields: [badgeInstanceId], references: [id], onDelete: Restrict)
+  recipient     Subject       @relation(fields: [recipientSubjectId], references: [id], onDelete: Restrict)
+  mediaAsset    MediaAsset?   @relation("ShareMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
+
+  @@index([badgeInstanceId, recipientSubjectId, format, status])
+  @@map("share_asset")
+}
+
+model SocialConnection {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String                 @map("user_id") @db.Uuid
+  provider          SocialProvider
+  providerAccountId String                 @map("provider_account_id")
+  encryptedTokenRef String                 @map("encrypted_token_ref")
+  scopes            String[]
+  status            SocialConnectionStatus @default(ACTIVE)
+  connectedAt       DateTime               @default(now()) @map("connected_at") @db.Timestamptz(3)
+  revokedAt         DateTime?              @map("revoked_at") @db.Timestamptz(3)
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId, status])
+  @@map("social_connection")
+}
