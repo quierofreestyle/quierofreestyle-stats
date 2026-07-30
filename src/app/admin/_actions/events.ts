@@ -1,6 +1,7 @@
 "use server";
 
-import { randomInt } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -9,11 +10,13 @@ import {
   readEventForm,
   type EventFormState,
 } from "../../../features/admin/event-form";
+import { validateEventPublication } from "../../../features/admin/event-publication";
 import { normalizeSlug } from "../../../features/admin/subject-form";
 import { requireAdminCapability } from "../../../server/auth/permissions";
 import { db } from "../../../server/db";
 
 const EVENT_MANAGE = ["EVENT_MANAGE"] as const;
+const EVENT_PUBLISH = ["EVENT_PUBLISH"] as const;
 
 export type QuickCompetitorResult =
   | { competitor: { id: string; label: string }; error?: never }
@@ -295,4 +298,104 @@ export async function updateEvent(
     return { error: eventFormError(error) };
   }
   redirect(`/admin/eventos/${id}?success=updated`);
+}
+
+export async function publishEvent(id: string) {
+  const actor = await requireAdminCapability(
+    EVENT_PUBLISH,
+    `/admin/eventos/${id}/publicar`,
+  );
+  let publicationError: string | null = null;
+
+  try {
+    const correlationId = randomUUID();
+    await db.$transaction(async (tx) => {
+      const event = await tx.event.findUnique({
+        where: { id },
+        include: {
+          competition: { select: { subjectId: true } },
+          placements: {
+            where: { status: "ACTIVE" },
+            include: { members: { select: { competitorId: true } } },
+            orderBy: [{ position: "asc" }, { slot: "asc" }],
+          },
+        },
+      });
+      if (!event) throw new Error("El evento ya no existe.");
+
+      const validation = validateEventPublication({
+        competitionExists: Boolean(event.competition),
+        datePrecision: event.datePrecision,
+        format: event.format,
+        placements: event.placements.map((placement) => ({
+          competitorIds: placement.members.map(({ competitorId }) => competitorId),
+          position: placement.position,
+          type: placement.type,
+        })),
+        resolution: event.resolution,
+        status: event.status,
+      });
+      if (validation.errors.length) {
+        throw new Error(validation.errors.join(" "));
+      }
+
+      const publishedAt = new Date();
+      const updated = await tx.event.update({
+        where: { id, status: "DRAFT" },
+        data: {
+          publishedAt,
+          publishedById: actor.id,
+          status: "PUBLISHED",
+        },
+      });
+      await tx.recalculationRun.create({
+        data: {
+          correlationId,
+          triggerType: "EVENT_PUBLISHED",
+          triggerEntityId: id,
+          mode: "APPLY",
+          status: "QUEUED",
+          initiatedById: actor.id,
+          summary: {
+            eventId: id,
+            participantCount: validation.participantCount,
+            resultCount: validation.resultCount,
+          },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "PUBLISH",
+          entityKind: "event",
+          entityId: id,
+          beforeData: {
+            publishedAt: event.publishedAt,
+            publishedById: event.publishedById,
+            status: event.status,
+          },
+          afterData: {
+            publishedAt: updated.publishedAt,
+            publishedById: updated.publishedById,
+            status: updated.status,
+          },
+          reason: "Publicación administrativa de evento",
+          correlationId,
+        },
+      });
+    });
+  } catch (error) {
+    publicationError = eventFormError(error);
+  }
+
+  if (publicationError) {
+    redirect(
+      `/admin/eventos/${id}/publicar?error=${encodeURIComponent(publicationError)}`,
+    );
+  }
+  revalidatePath("/admin");
+  revalidatePath("/admin/eventos");
+  revalidatePath(`/admin/eventos/${id}`);
+  redirect(`/admin/eventos/${id}?success=published`);
 }
