@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminEventDetailPage({ params }: Props) {
   const { id } = await params;
-  await requireAdminCapability(
+  const user = await requireAdminCapability(
     ["EVENT_READ", "EVENT_MANAGE", "EVENT_PUBLISH"],
     `/admin/eventos/${id}`,
   );
@@ -43,13 +43,17 @@ export default async function AdminEventDetailPage({ params }: Props) {
     },
   });
   if (!event) notFound();
+  const canEdit = user.permissions.has("EVENT_MANAGE") && event.status === "DRAFT";
 
   return (
     <>
       <Link className="admin-back" href="/admin/eventos">← Volver a eventos</Link>
       <header className="admin-header">
         <div><p className="eyebrow">{event.competition.subject.displayName}</p><h1>{event.title}</h1></div>
-        <span className={`admin-pill ${event.status.toLowerCase()}`}>{adminLabel(event.status)}</span>
+        <div className="admin-header-actions">
+          <span className={`admin-pill ${event.status.toLowerCase()}`}>{adminLabel(event.status)}</span>
+          {canEdit ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/editar`}>Editar evento</Link> : null}
+        </div>
       </header>
       <section className="admin-detail-grid">
         <article>

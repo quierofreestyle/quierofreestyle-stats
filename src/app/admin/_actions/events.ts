@@ -1,0 +1,289 @@
+"use server";
+
+import { randomInt } from "node:crypto";
+import { redirect } from "next/navigation";
+
+import {
+  buildEventIdentity,
+  eventFormError,
+  readEventForm,
+  type EventFormState,
+} from "../../../features/admin/event-form";
+import { normalizeSlug } from "../../../features/admin/subject-form";
+import { requireAdminCapability } from "../../../server/auth/permissions";
+import { db } from "../../../server/db";
+
+const EVENT_MANAGE = ["EVENT_MANAGE"] as const;
+
+export type QuickCompetitorResult =
+  | { competitor: { id: string; label: string }; error?: never }
+  | { competitor?: never; error: string };
+
+export async function createQuickCompetitor(
+  displayNameInput: string,
+): Promise<QuickCompetitorResult> {
+  const actor = await requireAdminCapability(EVENT_MANAGE, "/admin/eventos/nuevo");
+  const displayName = displayNameInput.trim();
+  if (displayName.length < 2 || displayName.length > 120) {
+    return { error: "El nombre debe tener entre 2 y 120 caracteres." };
+  }
+  const slug = normalizeSlug(displayName);
+  try {
+    const duplicate = await db.subject.findFirst({
+      where: {
+        type: "COMPETITOR",
+        OR: [
+          { displayName: { equals: displayName, mode: "insensitive" } },
+          { slug },
+          {
+            names: {
+              some: {
+                normalizedValue: { equals: displayName, mode: "insensitive" },
+              },
+            },
+          },
+        ],
+      },
+      select: { id: true, displayName: true },
+    });
+    if (duplicate) {
+      return {
+        error: `Ya existe el competidor “${duplicate.displayName}”. Seleccionalo desde la búsqueda.`,
+      };
+    }
+    const created = await db.$transaction(async (tx) => {
+      const subject = await tx.subject.create({
+        data: {
+          displayName,
+          slug,
+          type: "COMPETITOR",
+          status: "DRAFT",
+          names: {
+            create: {
+              value: displayName,
+              normalizedValue: displayName,
+              kind: "PRIMARY",
+            },
+          },
+          competitor: { create: {} },
+        },
+        select: { id: true, displayName: true },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "CREATE",
+          entityKind: "subject",
+          entityId: subject.id,
+          afterData: { displayName, slug, type: "COMPETITOR", status: "DRAFT" },
+          reason: "Alta rápida de competidor desde evento",
+        },
+      });
+      return subject;
+    });
+    return { competitor: { id: created.id, label: created.displayName } };
+  } catch (error) {
+    return { error: eventFormError(error) };
+  }
+}
+
+function eventData(
+  input: ReturnType<typeof readEventForm>,
+  identity: ReturnType<typeof buildEventIdentity>,
+) {
+  const {
+    placements: _placements,
+    sources: _sources,
+    ...data
+  } = input;
+  void _placements;
+  void _sources;
+  return { ...data, ...identity, status: "DRAFT" as const };
+}
+
+function placementCreates(input: ReturnType<typeof readEventForm>) {
+  return input.placements.map((placement, slotIndex) => ({
+    position: placement.position,
+    slot: slotIndex + 1,
+    type: placement.type,
+    groupLabel: placement.groupLabel,
+    members: {
+      create: placement.competitorIds.map((competitorId, memberIndex) => ({
+        competitorId,
+        memberOrder: memberIndex + 1,
+      })),
+    },
+  }));
+}
+
+function sourceCreates(input: ReturnType<typeof readEventForm>) {
+  return input.sources.map((source) => ({
+    purpose: source.purpose,
+    source: {
+      create: {
+        url: source.url,
+        title: source.title,
+        publisher: source.publisher,
+        type: source.type,
+      },
+    },
+  }));
+}
+
+async function validateReferences(input: ReturnType<typeof readEventForm>) {
+  const competition = await db.competition.findUnique({
+    where: { subjectId: input.competitionId },
+    select: { subject: { select: { displayName: true } } },
+  });
+  if (!competition) throw new Error("La competencia seleccionada ya no está disponible.");
+  if (input.seasonId) {
+    const season = await db.season.findUnique({
+      where: {
+        id_competitionId: {
+          id: input.seasonId,
+          competitionId: input.competitionId,
+        },
+      },
+      select: { id: true },
+    });
+    if (!season) throw new Error("La temporada no pertenece a la competencia seleccionada.");
+  }
+  const competitorIds = [
+    ...new Set(input.placements.flatMap(({ competitorIds }) => competitorIds)),
+  ];
+  if (competitorIds.length) {
+    const count = await db.competitor.count({
+      where: { subjectId: { in: competitorIds } },
+    });
+    if (count !== competitorIds.length) {
+      throw new Error("Uno de los integrantes seleccionados ya no está disponible.");
+    }
+  }
+  return competition.subject.displayName;
+}
+
+async function createIdentity(
+  input: ReturnType<typeof readEventForm>,
+  competitionName: string,
+  currentSlug?: string,
+) {
+  const probe = buildEventIdentity(competitionName, input, "00");
+  const base = probe.slug.slice(0, -3);
+  if (currentSlug?.startsWith(`${base}-`)) {
+    return { title: probe.title, slug: currentSlug };
+  }
+  const used = new Set(
+    (
+      await db.event.findMany({
+        where: {
+          competitionId: input.competitionId,
+          slug: { startsWith: `${base}-` },
+        },
+        select: { slug: true },
+      })
+    ).map(({ slug }) => slug),
+  );
+  const start = randomInt(10, 100);
+  for (let offset = 0; offset < 90; offset += 1) {
+    const suffix = String(10 + ((start - 10 + offset) % 90));
+    const identity = buildEventIdentity(competitionName, input, suffix);
+    if (!used.has(identity.slug)) return identity;
+  }
+  throw new Error("No se pudo generar un identificador único para este evento.");
+}
+
+export async function createEvent(
+  _state: EventFormState,
+  formData: FormData,
+): Promise<EventFormState> {
+  const actor = await requireAdminCapability(EVENT_MANAGE, "/admin/eventos/nuevo");
+  try {
+    const input = readEventForm(formData);
+    const competitionName = await validateReferences(input);
+    const identity = await createIdentity(input, competitionName);
+    await db.$transaction(async (tx) => {
+      const created = await tx.event.create({
+        data: {
+          ...eventData(input, identity),
+          placements: { create: placementCreates(input) },
+          sources: { create: sourceCreates(input) },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "CREATE",
+          entityKind: "event",
+          entityId: created.id,
+          afterData: JSON.parse(JSON.stringify({ ...input, ...identity })),
+          reason: "Alta administrativa de evento en borrador",
+        },
+      });
+    });
+  } catch (error) {
+    return { error: eventFormError(error) };
+  }
+  redirect("/admin/eventos?success=created");
+}
+
+export async function updateEvent(
+  id: string,
+  _state: EventFormState,
+  formData: FormData,
+): Promise<EventFormState> {
+  const actor = await requireAdminCapability(
+    EVENT_MANAGE,
+    `/admin/eventos/${id}/editar`,
+  );
+  try {
+    const input = readEventForm(formData);
+    const competitionName = await validateReferences(input);
+    const current = await db.event.findUnique({ where: { id }, select: { slug: true } });
+    if (!current) throw new Error("El evento ya no existe.");
+    const identity = await createIdentity(input, competitionName, current.slug);
+    await db.$transaction(async (tx) => {
+      const before = await tx.event.findUniqueOrThrow({
+        where: { id },
+        include: {
+          placements: { include: { members: true } },
+          sources: { include: { source: true } },
+        },
+      });
+      if (before.status !== "DRAFT") {
+        throw new Error(
+          "Solo se pueden editar eventos en borrador. Los datos publicados requieren el flujo de corrección.",
+        );
+      }
+      await tx.placementMember.deleteMany({
+        where: { placement: { eventId: id } },
+      });
+      await tx.placement.deleteMany({ where: { eventId: id } });
+      await tx.eventSource.deleteMany({ where: { eventId: id } });
+      await tx.event.update({
+        where: { id, status: "DRAFT" },
+        data: {
+          ...eventData(input, identity),
+          placements: { create: placementCreates(input) },
+          sources: { create: sourceCreates(input) },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "UPDATE",
+          entityKind: "event",
+          entityId: id,
+          beforeData: JSON.parse(JSON.stringify(before)),
+          afterData: JSON.parse(JSON.stringify({ ...input, ...identity })),
+          reason: "Edición administrativa de evento en borrador",
+        },
+      });
+    });
+  } catch (error) {
+    return { error: eventFormError(error) };
+  }
+  redirect(`/admin/eventos/${id}?success=updated`);
+}

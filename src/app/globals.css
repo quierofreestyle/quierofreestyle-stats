@@ -1410,6 +1410,240 @@ a {
   font-weight: 800;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-table-actions {
+  white-space: nowrap;
+}
+
+.admin-table-actions > a + a {
+  margin-left: 16px;
+}
+
+.admin-event-editor {
+  display: grid;
+  gap: 24px;
+  max-width: 1040px;
+  margin-top: 34px;
+}
+
+.admin-form-section {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  gap: 30px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.admin-form-section h2 {
+  margin: 5px 0 8px;
+}
+
+.admin-form-section > div > small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-form-grid label {
+  display: grid;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-form-grid input,
+.admin-form-grid select,
+.admin-form-grid textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  outline: 0;
+  background: var(--bg);
+  color: var(--text);
+  text-transform: none;
+}
+
+.admin-form-grid select[multiple] {
+  min-height: 150px;
+}
+
+.admin-form-grid textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.admin-form-grid input:focus,
+.admin-form-grid select:focus,
+.admin-form-grid textarea:focus {
+  border-color: var(--accent);
+}
+
+.admin-form-grid label small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-transform: none;
+}
+
+.admin-repeatable {
+  display: block;
+}
+
+.admin-repeatable-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.admin-repeatable-heading button,
+.admin-remove-action {
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--accent);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-repeatable-card {
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.admin-result-title {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.admin-competitor-picker {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-picker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-picker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-picker-chip button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-picker-results {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 10%);
+}
+
+.admin-picker-results button {
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-picker-results button:hover,
+.admin-picker-results button:focus-visible {
+  background: var(--surface);
+}
+
+.admin-picker-results .admin-picker-create {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.admin-picker-results p,
+.admin-picker-create-panel p {
+  margin: 0;
+  padding: 11px 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.admin-picker-create-panel {
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+}
+
+.admin-picker-create-panel > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-picker-create-panel button {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-picker-create-panel button:last-child {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.admin-picker-create-panel .admin-inline-error {
+  color: var(--danger);
+}
+
+.admin-remove-action {
+  margin-top: 16px;
+  color: var(--danger);
+}
+
+.admin-event-editor > .admin-form-actions {
+  padding: 22px 0 0;
+}
+
 @media (max-width: 900px) {
   .competition-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1425,6 +1659,11 @@ a {
   }
 
   .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-section,
+  .admin-form-grid {
     grid-template-columns: 1fr;
   }
 

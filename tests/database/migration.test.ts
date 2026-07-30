@@ -110,7 +110,12 @@ describe("migración inicial de PostgreSQL", () => {
     await postgres.start();
     client = postgres.getPgClient();
     await client.connect();
-    const migrationDirectories = (await readdir(migrationsPath)).sort();
+    const migrationDirectories = (
+      await readdir(migrationsPath, { withFileTypes: true })
+    )
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
     for (const directory of migrationDirectories) {
       await client.query(
         await readFile(join(migrationsPath, directory, "migration.sql"), "utf8"),
@@ -145,12 +150,32 @@ describe("migración inicial de PostgreSQL", () => {
 
   it("permite repetir un slug entre tipos de sujeto, pero no dentro del mismo tipo", async () => {
     const slug = `slug-compartido-${crypto.randomUUID()}`;
-    const insert = (type: "COMPETITOR" | "COMPETITION" | "ORGANIZATION") =>
-      client.query(
-        `INSERT INTO subject (type, slug, display_name, status, updated_at)
-         VALUES ($1::"SubjectType", $2, $3, 'ACTIVE', CURRENT_TIMESTAMP)`,
-        [type, slug, `${type} de prueba`],
-      );
+    const insert = async (type: "COMPETITOR" | "ORGANIZATION") => {
+      await client.query("BEGIN");
+      try {
+        const subject = await client.query<{ id: string }>(
+          `INSERT INTO subject (type, slug, display_name, status, updated_at)
+           VALUES ($1::"SubjectType", $2, $3, 'ACTIVE', CURRENT_TIMESTAMP)
+           RETURNING id`,
+          [type, slug, `${type} de prueba`],
+        );
+        const subjectId = subject.rows[0].id;
+        if (type === "COMPETITOR") {
+          await client.query("INSERT INTO competitor (subject_id) VALUES ($1)", [
+            subjectId,
+          ]);
+        } else {
+          await client.query("INSERT INTO organization (subject_id) VALUES ($1)", [
+            subjectId,
+          ]);
+        }
+        await client.query("COMMIT");
+        return subjectId;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    };
 
     await expect(insert("COMPETITOR")).resolves.toBeDefined();
     await expect(insert("ORGANIZATION")).resolves.toBeDefined();

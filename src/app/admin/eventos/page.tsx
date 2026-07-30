@@ -6,18 +6,19 @@ import { requireAdminCapability } from "../../../server/auth/permissions";
 import { db } from "../../../server/db";
 
 type Props = {
-  searchParams: Promise<{ q?: string; status?: string; competition?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; competition?: string; success?: string }>;
 };
 
 export const metadata: Metadata = { title: "Eventos · Administración" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminEventsPage({ searchParams }: Props) {
-  await requireAdminCapability(
+  const user = await requireAdminCapability(
     ["EVENT_READ", "EVENT_MANAGE", "EVENT_PUBLISH"],
     "/admin/eventos",
   );
-  const { q = "", status = "", competition = "" } = await searchParams;
+  const { q = "", status = "", competition = "", success } = await searchParams;
+  const canManage = user.permissions.has("EVENT_MANAGE");
   const query = q.trim();
   const validStatus = ["DRAFT", "PUBLISHED", "CORRECTED", "ANNULLED"].includes(status)
     ? (status as "DRAFT" | "PUBLISHED" | "CORRECTED" | "ANNULLED")
@@ -55,8 +56,9 @@ export default async function AdminEventsPage({ searchParams }: Props) {
     <>
       <header className="admin-header">
         <div><p className="eyebrow">Datos</p><h1>Eventos</h1></div>
-        <span className="admin-status">Solo lectura</span>
+        {canManage ? <Link className="admin-primary-action" href="/admin/eventos/nuevo">Nuevo evento</Link> : <span className="admin-status">Solo lectura</span>}
       </header>
+      {success ? <p className="admin-form-success">El evento se guardó correctamente.</p> : null}
       <form className="admin-filters admin-filters-wide" action="/admin/eventos">
         <label>Buscar<input name="q" defaultValue={query} placeholder="Título o identificador" /></label>
         <label>Estado<select name="status" defaultValue={validStatus ?? ""}><option value="">Todos</option><option value="DRAFT">Borrador</option><option value="PUBLISHED">Publicado</option><option value="CORRECTED">Corregido</option><option value="ANNULLED">Anulado</option></select></label>
@@ -67,7 +69,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
       <section className="admin-table-wrap">
         <div className="admin-table-heading"><p>{events.length} eventos encontrados</p></div>
         <table className="admin-table">
-          <thead><tr><th>Evento</th><th>Competencia</th><th>Fecha</th><th>Estado</th><th>Finalistas</th><th aria-label="Detalle" /></tr></thead>
+          <thead><tr><th>Evento</th><th>Competencia</th><th>Fecha</th><th>Estado</th><th>Finalistas</th><th>Acciones</th></tr></thead>
           <tbody>
             {events.map((event) => (
               <tr key={event.id}>
@@ -76,7 +78,10 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                 <td>{formatAdminDate(event.occurredOn)}</td>
                 <td><span className={`admin-pill ${event.status.toLowerCase()}`}>{adminLabel(event.status)}</span></td>
                 <td>{event.placements.reduce((total, placement) => total + placement.members.length, 0)}</td>
-                <td><Link className="admin-row-link" href={`/admin/eventos/${event.id}`}>Ver detalle</Link></td>
+                <td className="admin-table-actions">
+                  <Link className="admin-row-link" href={`/admin/eventos/${event.id}`}>Ver detalle</Link>
+                  {canManage && event.status === "DRAFT" ? <Link className="admin-row-action" href={`/admin/eventos/${event.id}/editar`}>Editar</Link> : null}
+                </td>
               </tr>
             ))}
           </tbody>
