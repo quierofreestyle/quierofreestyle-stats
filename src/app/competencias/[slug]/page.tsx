@@ -6,6 +6,7 @@ import {
   toPublicCompetitions,
   type CompetitionSource,
 } from "../../../features/competitions/model";
+import { publicEventHref } from "../../../features/events/public-event";
 import { listPublicCompetitions } from "../../../server/queries/public-competitions";
 
 type Props = {
@@ -97,6 +98,12 @@ export default async function CompetitionDetailPage({ params }: Props) {
                       Finalistas: {event.finalists.join(" · ")}
                     </p>
                   ) : null}
+                  <Link
+                    className="event-detail-link"
+                    href={publicEventHref(competition.slug, event.slug)}
+                  >
+                    Ver evento <span aria-hidden="true">→</span>
+                  </Link>
                 </article>
               </li>
             ))}
