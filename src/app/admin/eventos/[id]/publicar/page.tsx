@@ -87,11 +87,20 @@ export default async function PublishAdminEventPage({
             </div>
           </div>
           {canPublish ? (
-            <ul className="admin-publication-checks">
-              <li>La competencia y la fecha están definidas.</li>
-              <li>La resolución coincide con los resultados cargados.</li>
-              <li>Los integrantes son únicos y respetan el formato.</li>
-            </ul>
+            <>
+              <ul className="admin-publication-checks">
+                <li>La competencia y la fecha están definidas.</li>
+                <li>La resolución coincide con los resultados cargados.</li>
+                <li>Los integrantes son únicos y respetan el formato.</li>
+              </ul>
+              {validation.warnings.length ? (
+                <ul className="admin-publication-warnings">
+                  {validation.warnings.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </>
           ) : (
             <ul className="admin-publication-errors">
               {validation.errors.map((message) => (
@@ -142,6 +151,13 @@ export default async function PublishAdminEventPage({
               </strong>
             </li>
           ))}
+          {event.resolution === "DECIDED" &&
+          !event.placements.some(({ type }) => type === "RUNNER_UP") ? (
+            <li>
+              <span>2º · Subcampeón</span>
+              <strong>Sin datos</strong>
+            </li>
+          ) : null}
         </ol>
       </section>
 

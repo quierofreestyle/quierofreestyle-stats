@@ -396,7 +396,7 @@ export function AdminEventForm({
         </section>
 
         <section className="admin-form-section admin-repeatable">
-          <div className="admin-repeatable-heading"><div><p className="eyebrow">Resultado</p><h2>Finalistas y agrupaciones</h2><small>Los tipos y posiciones se calculan automáticamente según la resolución.</small></div></div>
+          <div className="admin-repeatable-heading"><div><p className="eyebrow">Resultado</p><h2>Finalistas y agrupaciones</h2><small>Los tipos y posiciones se calculan automáticamente según la resolución. En una final decidida, el subcampeón puede quedar sin informar.</small></div></div>
           {placements.map((placement, index) => (
             <article className="admin-repeatable-card" key={index}>
               <h3 className="admin-result-title">
@@ -428,7 +428,14 @@ export function AdminEventForm({
                   </label>
                 ) : null}
                 <div className="admin-field-wide">
-                  <span>Integrantes <span className="admin-required">*</span></span>
+                  <span>
+                    Integrantes{" "}
+                    {resolution === "DECIDED" && placement.type === "RUNNER_UP" ? (
+                      <small>(opcional si no se conoce)</small>
+                    ) : (
+                      <span className="admin-required">*</span>
+                    )}
+                  </span>
                   <CompetitorPicker
                     options={competitorOptions}
                     selectedIds={placement.competitorIds}
@@ -449,7 +456,7 @@ export function AdminEventForm({
               </div>
             </article>
           ))}
-          <p className="admin-empty">Podés guardar el borrador con ambos resultados vacíos y completarlos después.</p>
+          <p className="admin-empty">Podés guardar el borrador con ambos resultados vacíos. Una final decidida puede publicarse con campeón conocido y subcampeón sin informar.</p>
         </section>
 
         <section className="admin-form-section admin-repeatable">

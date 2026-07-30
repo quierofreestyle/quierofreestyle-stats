@@ -220,6 +220,44 @@ describe("migración inicial de PostgreSQL", () => {
     ).resolves.toBeUndefined();
   });
 
+  it("acepta una final decidida publicada sin subcampeón conocido", async () => {
+    const organization = await createSubject(
+      "ORGANIZATION",
+      "Organización resultado parcial",
+    );
+    const competition = await createSubject(
+      "COMPETITION",
+      "Competencia resultado parcial",
+      organization,
+    );
+    const champion = await createSubject("COMPETITOR", "Campeón documentado");
+
+    await client.query("BEGIN");
+    const event = await client.query<{ id: string }>(
+      `INSERT INTO event
+         (competition_id, slug, title, resolution, status, updated_at)
+       VALUES ($1, $2, 'Evento parcial', 'DECIDED', 'DRAFT', CURRENT_TIMESTAMP)
+       RETURNING id`,
+      [competition, `partial-${crypto.randomUUID()}`],
+    );
+    const placement = await client.query<{ id: string }>(
+      `INSERT INTO placement (event_id, position, slot, type)
+       VALUES ($1, 1, 1, 'CHAMPION')
+       RETURNING id`,
+      [event.rows[0].id],
+    );
+    await client.query(
+      "INSERT INTO placement_member (placement_id, competitor_id) VALUES ($1, $2)",
+      [placement.rows[0].id, champion],
+    );
+    await client.query(
+      "UPDATE event SET status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP WHERE id = $1",
+      [event.rows[0].id],
+    );
+
+    await expect(client.query("COMMIT")).resolves.toBeDefined();
+  });
+
   it("rechaza una resolución publicada sin resultados consistentes", async () => {
     const competition = await client.query<{ subject_id: string }>(
       "SELECT subject_id FROM competition LIMIT 1",

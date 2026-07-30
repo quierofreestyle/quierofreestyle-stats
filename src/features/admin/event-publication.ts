@@ -22,6 +22,7 @@ export type EventPublicationInput = {
 
 export type PublicationValidation = {
   errors: string[];
+  warnings: string[];
   participantCount: number;
   resultCount: number;
 };
@@ -30,6 +31,7 @@ export function validateEventPublication(
   input: EventPublicationInput,
 ): PublicationValidation {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const expected = placementStructure(input.resolution);
 
   if (input.status !== "DRAFT") {
@@ -41,8 +43,25 @@ export function validateEventPublication(
   if (input.datePrecision === "UNKNOWN") {
     errors.push("Definí al menos el año del evento antes de publicarlo.");
   }
-  if (input.placements.length !== expected.length) {
-    errors.push("El evento debe tener los dos resultados requeridos por su resolución.");
+  const minimumResults = input.resolution === "DECIDED" ? 1 : expected.length;
+  if (
+    input.placements.length < minimumResults ||
+    input.placements.length > expected.length
+  ) {
+    errors.push(
+      input.resolution === "DECIDED"
+        ? "Una final decidida debe tener al menos un campeón."
+        : "El evento debe tener los dos resultados requeridos por su resolución.",
+    );
+  }
+  if (
+    input.resolution === "DECIDED" &&
+    input.placements.length === 1 &&
+    input.placements[0]?.type === "CHAMPION"
+  ) {
+    warnings.push(
+      "El evento se publicará con información parcial: no se conoce el subcampeón.",
+    );
   }
 
   const memberLimit = placementMemberLimit(input.format);
@@ -73,6 +92,7 @@ export function validateEventPublication(
 
   return {
     errors: [...new Set(errors)],
+    warnings: [...new Set(warnings)],
     participantCount: new Set(competitorIds).size,
     resultCount: input.placements.length,
   };

@@ -57,7 +57,7 @@ describe("formulario administrativo de eventos", () => {
     );
   });
 
-  it("rechaza una estructura incompleta para la resolución", () => {
+  it("acepta una final decidida con campeón y subcampeón sin informar", () => {
     const form = validForm();
     form.set(
       "placements",
@@ -65,7 +65,26 @@ describe("formulario administrativo de eventos", () => {
         { position: 1, type: "CHAMPION", groupLabel: "", competitorIds: ["a"] },
       ]),
     );
-    expect(() => readEventForm(form)).toThrow(/cantidad de resultados/i);
+    expect(readEventForm(form).placements).toEqual([
+      {
+        position: 1,
+        type: "CHAMPION",
+        groupLabel: null,
+        competitorIds: ["a"],
+      },
+    ]);
+  });
+
+  it("omite el subcampeón vacío enviado por el editor", () => {
+    const form = validForm();
+    form.set(
+      "placements",
+      JSON.stringify([
+        { groupLabel: "", competitorIds: ["a"] },
+        { groupLabel: "", competitorIds: [] },
+      ]),
+    );
+    expect(readEventForm(form).placements).toHaveLength(1);
   });
 
   it("acepta un campeonato compartido", () => {

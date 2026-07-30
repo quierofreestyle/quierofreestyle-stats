@@ -73,4 +73,12 @@ describe("public events", () => {
       href: "/competidores/aka",
     });
   });
+
+  it("marks a decided event without a runner-up as partially documented", () => {
+    const event = toPublicEventDetail({
+      ...source,
+      resolution: "DECIDED",
+    });
+    expect(event.runnerUpKnown).toBe(false);
+  });
 });

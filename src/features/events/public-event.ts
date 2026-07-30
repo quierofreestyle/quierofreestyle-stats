@@ -92,6 +92,10 @@ export function toPublicEventCard(event: PublicEventListSource) {
 }
 
 export function toPublicEventDetail(event: PublicEventDetailSource) {
+  const runnerUpKnown = event.placements.some(
+    (placement) => placement.type === "RUNNER_UP",
+  );
+
   return {
     ...toPublicEventCard(event),
     competitionSlug: event.competition.subject.slug,
@@ -102,6 +106,7 @@ export function toPublicEventDetail(event: PublicEventDetailSource) {
         .join(" · ") || null,
     address: event.venue?.address ?? null,
     scopeNotes: event.scopeNotes,
+    runnerUpKnown,
     placements: event.placements.map((placement) => ({
       key: `${placement.position}-${placement.slot}`,
       position: placement.position,
