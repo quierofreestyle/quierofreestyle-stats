@@ -33,7 +33,12 @@ async function upsertSubject(
   },
 ) {
   const subject = await tx.subject.upsert({
-    where: { slug: input.slug },
+    where: {
+      type_slug: {
+        type: input.type,
+        slug: input.slug,
+      },
+    },
     update: {
       displayName: input.displayName,
       status: input.status,
@@ -79,11 +84,15 @@ async function ensureProvisionalOrganization(
   displayName: string,
 ) {
   const slug = organizationSlug(competitionSlug);
-  const existing = await tx.subject.findUnique({ where: { slug } });
+  const existing = await tx.subject.findUnique({
+    where: {
+      type_slug: {
+        type: SubjectType.ORGANIZATION,
+        slug,
+      },
+    },
+  });
   if (existing) {
-    if (existing.type !== SubjectType.ORGANIZATION) {
-      throw new Error(`El slug ${slug} ya pertenece a un sujeto que no es organización.`);
-    }
     return existing;
   }
   return upsertSubject(tx, {

@@ -1,13 +1,11 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import EmbeddedPostgres from "embedded-postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const migrationPath = resolve(
-  "prisma/migrations/202607210001_initial_schema/migration.sql",
-);
+const migrationsPath = resolve("prisma/migrations");
 const seedPath = resolve("prisma/seed.sql");
 
 let postgres: EmbeddedPostgres;
@@ -112,7 +110,17 @@ describe("migración inicial de PostgreSQL", () => {
     await postgres.start();
     client = postgres.getPgClient();
     await client.connect();
-    await client.query(await readFile(migrationPath, "utf8"));
+    const migrationDirectories = (
+      await readdir(migrationsPath, { withFileTypes: true })
+    )
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    for (const directory of migrationDirectories) {
+      await client.query(
+        await readFile(join(migrationsPath, directory, "migration.sql"), "utf8"),
+      );
+    }
   }, 120_000);
 
   afterAll(async () => {
@@ -138,6 +146,40 @@ describe("migración inicial de PostgreSQL", () => {
       "citext",
       "pgcrypto",
     ]);
+  });
+
+  it("permite repetir un slug entre tipos de sujeto, pero no dentro del mismo tipo", async () => {
+    const slug = `slug-compartido-${crypto.randomUUID()}`;
+    const insert = async (type: "COMPETITOR" | "ORGANIZATION") => {
+      await client.query("BEGIN");
+      try {
+        const subject = await client.query<{ id: string }>(
+          `INSERT INTO subject (type, slug, display_name, status, updated_at)
+           VALUES ($1::"SubjectType", $2, $3, 'ACTIVE', CURRENT_TIMESTAMP)
+           RETURNING id`,
+          [type, slug, `${type} de prueba`],
+        );
+        const subjectId = subject.rows[0].id;
+        if (type === "COMPETITOR") {
+          await client.query("INSERT INTO competitor (subject_id) VALUES ($1)", [
+            subjectId,
+          ]);
+        } else {
+          await client.query("INSERT INTO organization (subject_id) VALUES ($1)", [
+            subjectId,
+          ]);
+        }
+        await client.query("COMMIT");
+        return subjectId;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    };
+
+    await expect(insert("COMPETITOR")).resolves.toBeDefined();
+    await expect(insert("ORGANIZATION")).resolves.toBeDefined();
+    await expect(insert("COMPETITOR")).rejects.toThrow(/subject_type_slug_key/i);
   });
 
   it("ejecuta el seed dos veces sin duplicar catálogos", async () => {
