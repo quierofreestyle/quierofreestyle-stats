@@ -257,9 +257,7 @@ export async function applyLegacyImportPlan(
           officialScope: legacy.officialScope,
           scopeNotes: legacy.scopeNotes,
           format: legacy.format,
-          resolution: legacy.publish
-            ? EventResolution.DECIDED
-            : EventResolution.UNDECIDED,
+          resolution: EventResolution.DECIDED,
           status: legacy.publish ? EventStatus.PUBLISHED : EventStatus.DRAFT,
           publishedAt: legacy.publish ? date : null,
         },
@@ -276,9 +274,7 @@ export async function applyLegacyImportPlan(
           officialScope: legacy.officialScope,
           scopeNotes: legacy.scopeNotes,
           format: legacy.format,
-          resolution: legacy.publish
-            ? EventResolution.DECIDED
-            : EventResolution.UNDECIDED,
+          resolution: EventResolution.DECIDED,
           status: legacy.publish ? EventStatus.PUBLISHED : EventStatus.DRAFT,
           publishedAt: legacy.publish ? date : null,
         },

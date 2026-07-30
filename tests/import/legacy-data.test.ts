@@ -26,8 +26,8 @@ describe("importador histórico", () => {
       provisionalOrganizations: 8,
       competitors: 51,
       events: 55,
-      publishedEvents: 48,
-      draftEvents: 7,
+      publishedEvents: 54,
+      draftEvents: 1,
       issues: 7,
     });
   });
@@ -38,9 +38,12 @@ describe("importador histórico", () => {
     expect(organizationSlug("sativa-free")).toBe("org-sativa-free");
   });
 
-  it("deja en borrador los eventos incompletos o con finalistas inválidos", () => {
+  it("publica resultados con campeón conocido aunque falte el subcampeón", () => {
     const plan = buildLegacyImportPlan(source);
-    expect(plan.events.filter(({ publish }) => !publish)).toHaveLength(7);
+    expect(plan.events.filter(({ publish }) => !publish)).toHaveLength(1);
+    expect(
+      plan.events.find(({ id }) => id === "sativa-free-2026-01-05-1"),
+    ).toMatchObject({ publish: true, validRunnersUp: [] });
     expect(
       plan.issues.find(
         ({ legacyKey, issueType }) =>

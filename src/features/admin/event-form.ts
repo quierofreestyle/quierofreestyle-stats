@@ -206,13 +206,18 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
     "los finalistas",
   );
   const structure = placementStructure(resolution);
-  if (rawPlacements.length !== 0 && rawPlacements.length !== structure.length) {
+  const validPlacementCount =
+    rawPlacements.length === 0 ||
+    rawPlacements.length === structure.length ||
+    (resolution === "DECIDED" && rawPlacements.length === 1);
+  if (!validPlacementCount) {
     throw new Error("La cantidad de resultados no coincide con la resolución elegida.");
   }
   const memberLimit = placementMemberLimit(format);
-  const placements = rawPlacements.map((placement, index) => {
+  const placements = rawPlacements.flatMap((placement, index) => {
       const competitorIds = [...new Set(placement.competitorIds.filter(Boolean))];
       if (!competitorIds.length) {
+        if (resolution === "DECIDED" && index === 1) return [];
         throw new Error(`Seleccioná al menos un integrante para el resultado ${index + 1}.`);
       }
       if (competitorIds.length > memberLimit) {
@@ -220,13 +225,13 @@ export function readEventForm(formData: FormData, today = argentinaToday()) {
           `El formato elegido admite hasta ${memberLimit} integrante${memberLimit === 1 ? "" : "s"} por resultado.`,
         );
       }
-      return {
+      return [{
         position: structure[index].position,
         type: structure[index].type,
         groupLabel:
           format === "SOLO" ? null : placement.groupLabel?.trim() || null,
         competitorIds,
-      };
+      }];
     });
 
   if (placements.length) {

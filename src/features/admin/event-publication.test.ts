@@ -26,8 +26,28 @@ describe("publicación administrativa de eventos", () => {
   it("acepta un evento completo y resume su impacto", () => {
     expect(validateEventPublication(validEvent())).toEqual({
       errors: [],
+      warnings: [],
       participantCount: 2,
       resultCount: 2,
+    });
+  });
+
+  it("permite publicar con campeón conocido y advierte si falta el subcampeón", () => {
+    expect(
+      validateEventPublication(
+        validEvent({
+          placements: [
+            { position: 1, type: "CHAMPION", competitorIds: ["a"] },
+          ],
+        }),
+      ),
+    ).toEqual({
+      errors: [],
+      warnings: [
+        "El evento se publicará con información parcial: no se conoce el subcampeón.",
+      ],
+      participantCount: 1,
+      resultCount: 1,
     });
   });
 
@@ -42,7 +62,7 @@ describe("publicación administrativa de eventos", () => {
     expect(result.errors).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/año del evento/i),
-        expect.stringMatching(/dos resultados/i),
+        expect.stringMatching(/al menos un campeón/i),
       ]),
     );
   });

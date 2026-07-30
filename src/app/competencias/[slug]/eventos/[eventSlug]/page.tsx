@@ -86,6 +86,15 @@ export default async function PublicEventPage({ params }: Props) {
                 </div>
               </li>
             ))}
+            {event.resolution === "DECIDED" && !event.runnerUpKnown ? (
+              <li>
+                <span className="placement-position">2º</span>
+                <div>
+                  <small>Subcampeón</small>
+                  <h3>Sin datos</h3>
+                </div>
+              </li>
+            ) : null}
           </ol>
         </div>
 

@@ -1593,7 +1593,8 @@ a {
 }
 
 .admin-publication-checks,
-.admin-publication-errors {
+.admin-publication-errors,
+.admin-publication-warnings {
   display: grid;
   gap: 14px;
   margin: 0;
@@ -1608,6 +1609,15 @@ a {
 
 .admin-publication-errors li::marker {
   color: var(--danger);
+}
+
+.admin-publication-warnings {
+  color: #f0b56a;
+  padding-top: 0;
+}
+
+.admin-publication-warnings li::marker {
+  color: #f59e0b;
 }
 
 .admin-publication-impact {

@@ -162,7 +162,7 @@ export function buildLegacyImportPlan(input: unknown): LegacyImportPlan {
       format: eventFormat(event.modalidad_base),
       officialScope,
       scopeNotes,
-      publish: event.subcampeones.length > 0 && invalidFinalists.length === 0,
+      publish: event.ganadores.length > 0 && invalidFinalists.length === 0,
       validWinners: event.ganadores.filter(({ competidor_id }) =>
         competitorIds.has(competidor_id),
       ),

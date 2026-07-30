@@ -205,6 +205,8 @@ DECLARE
   event_status text;
   event_resolution text;
   champion_count integer;
+  runner_up_count integer;
+  plain_finalist_count integer;
   finalist_count integer;
   empty_placement_count integer;
 BEGIN
@@ -227,18 +229,30 @@ BEGIN
   END IF;
 
   SELECT COUNT(*) FILTER (WHERE p.type = 'CHAMPION'),
+         COUNT(*) FILTER (WHERE p.type = 'RUNNER_UP'),
+         COUNT(*) FILTER (WHERE p.type = 'FINALIST'),
          COUNT(*) FILTER (WHERE p.type IN ('CHAMPION', 'RUNNER_UP', 'FINALIST')),
          COUNT(*) FILTER (WHERE NOT EXISTS (
            SELECT 1 FROM placement_member pm WHERE pm.placement_id = p.id
          ))
-    INTO champion_count, finalist_count, empty_placement_count
+    INTO champion_count, runner_up_count, plain_finalist_count,
+         finalist_count, empty_placement_count
     FROM placement p
     WHERE p.event_id = target_event AND p.status = 'ACTIVE';
 
-  IF empty_placement_count > 0 OR finalist_count < 2
-     OR (event_resolution = 'DECIDED' AND champion_count <> 1)
-     OR (event_resolution = 'SHARED_CHAMPIONSHIP' AND champion_count < 2)
-     OR (event_resolution = 'UNDECIDED' AND champion_count <> 0) THEN
+  IF empty_placement_count > 0
+     OR (event_resolution = 'DECIDED' AND (
+       champion_count <> 1 OR runner_up_count > 1
+       OR plain_finalist_count <> 0 OR finalist_count NOT BETWEEN 1 AND 2
+     ))
+     OR (event_resolution = 'SHARED_CHAMPIONSHIP' AND (
+       champion_count < 2 OR runner_up_count <> 0
+       OR plain_finalist_count <> 0 OR finalist_count <> champion_count
+     ))
+     OR (event_resolution = 'UNDECIDED' AND (
+       champion_count <> 0 OR runner_up_count <> 0
+       OR plain_finalist_count < 2 OR finalist_count <> plain_finalist_count
+     )) THEN
     RAISE EXCEPTION 'Los placements no coinciden con la resolución publicada del evento %', target_event;
   END IF;
 
