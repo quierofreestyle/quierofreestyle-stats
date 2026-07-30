@@ -105,4 +105,30 @@ describe("publicación administrativa de eventos", () => {
       ]),
     );
   });
+
+  it("permite corregir eventos publicados y corregidos", () => {
+    expect(
+      validateEventPublication(
+        validEvent({ status: "PUBLISHED", operation: "CORRECT" }),
+      ).errors,
+    ).toEqual([]);
+    expect(
+      validateEventPublication(
+        validEvent({ status: "CORRECTED", operation: "CORRECT" }),
+      ).errors,
+    ).toEqual([]);
+  });
+
+  it("impide corregir borradores o eventos anulados", () => {
+    expect(
+      validateEventPublication(
+        validEvent({ status: "DRAFT", operation: "CORRECT" }),
+      ).errors,
+    ).toContain("Solo se puede corregir un evento publicado o corregido.");
+    expect(
+      validateEventPublication(
+        validEvent({ status: "ANNULLED", operation: "CORRECT" }),
+      ).errors,
+    ).toContain("Solo se puede corregir un evento publicado o corregido.");
+  });
 });
