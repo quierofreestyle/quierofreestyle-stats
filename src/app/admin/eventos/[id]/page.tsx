@@ -6,13 +6,20 @@ import { adminLabel, formatAdminDate } from "../../../../features/admin/format";
 import { requireAdminCapability } from "../../../../server/auth/permissions";
 import { db } from "../../../../server/db";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ success?: string }>;
+};
 
 export const metadata: Metadata = { title: "Detalle de evento · Administración" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminEventDetailPage({ params }: Props) {
+export default async function AdminEventDetailPage({
+  params,
+  searchParams,
+}: Props) {
   const { id } = await params;
+  const { success } = await searchParams;
   const user = await requireAdminCapability(
     ["EVENT_READ", "EVENT_MANAGE", "EVENT_PUBLISH"],
     `/admin/eventos/${id}`,
@@ -44,6 +51,8 @@ export default async function AdminEventDetailPage({ params }: Props) {
   });
   if (!event) notFound();
   const canEdit = user.permissions.has("EVENT_MANAGE") && event.status === "DRAFT";
+  const canPublish =
+    user.permissions.has("EVENT_PUBLISH") && event.status === "DRAFT";
 
   return (
     <>
@@ -53,8 +62,14 @@ export default async function AdminEventDetailPage({ params }: Props) {
         <div className="admin-header-actions">
           <span className={`admin-pill ${event.status.toLowerCase()}`}>{adminLabel(event.status)}</span>
           {canEdit ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/editar`}>Editar evento</Link> : null}
+          {canPublish ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/publicar`}>Revisar y publicar</Link> : null}
         </div>
       </header>
+      {success === "published" ? (
+        <p className="admin-form-success">
+          El evento se publicó correctamente y su recálculo quedó encolado.
+        </p>
+      ) : null}
       <section className="admin-detail-grid">
         <article>
           <p className="eyebrow">Identificación</p>
@@ -65,6 +80,7 @@ export default async function AdminEventDetailPage({ params }: Props) {
             <div><dt>Resolución</dt><dd>{adminLabel(event.resolution)}</dd></div>
             <div><dt>Organización</dt><dd>{event.competition.organization.subject.displayName}</dd></div>
             <div><dt>Identificador</dt><dd>{event.slug}</dd></div>
+            <div><dt>Publicado</dt><dd>{event.publishedAt ? formatAdminDate(event.publishedAt) : "Todavía no"}</dd></div>
           </dl>
         </article>
         <article>

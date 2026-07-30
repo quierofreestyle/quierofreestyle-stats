@@ -1413,7 +1413,97 @@ a {
 .admin-header-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
+}
+
+.admin-publication-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 34px 0 24px;
+}
+
+.admin-publication-checks,
+.admin-publication-errors {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 24px 24px 24px 44px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.admin-publication-checks li::marker {
+  color: #83e5a7;
+}
+
+.admin-publication-errors li::marker {
+  color: var(--danger);
+}
+
+.admin-publication-impact {
+  margin: 0;
+  padding: 10px 22px;
+}
+
+.admin-publication-impact > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-publication-impact > div:last-child {
+  border-bottom: 0;
+}
+
+.admin-publication-impact dt {
+  color: var(--muted);
+}
+
+.admin-publication-impact dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 800;
+}
+
+.admin-publication-preview {
+  margin-bottom: 24px;
+}
+
+.admin-publication-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-publication-actions > a {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.admin-publication-actions button {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #111;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-publication-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 820px) {
+  .admin-publication-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-table-actions {
