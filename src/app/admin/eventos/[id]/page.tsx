@@ -53,6 +53,9 @@ export default async function AdminEventDetailPage({
   const canEdit = user.permissions.has("EVENT_MANAGE") && event.status === "DRAFT";
   const canPublish =
     user.permissions.has("EVENT_PUBLISH") && event.status === "DRAFT";
+  const canChangePublished =
+    user.permissions.has("EVENT_MANAGE") &&
+    ["PUBLISHED", "CORRECTED"].includes(event.status);
 
   return (
     <>
@@ -63,12 +66,20 @@ export default async function AdminEventDetailPage({
           <span className={`admin-pill ${event.status.toLowerCase()}`}>{adminLabel(event.status)}</span>
           {canEdit ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/editar`}>Editar evento</Link> : null}
           {canPublish ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/publicar`}>Revisar y publicar</Link> : null}
+          {canChangePublished ? <Link className="admin-primary-action" href={`/admin/eventos/${id}/corregir`}>Corregir evento</Link> : null}
+          {canChangePublished ? <Link href={`/admin/eventos/${id}/anular`}>Anular</Link> : null}
         </div>
       </header>
       {success === "published" ? (
         <p className="admin-form-success">
           El evento se publicó correctamente y su recálculo quedó encolado.
         </p>
+      ) : null}
+      {success === "corrected" ? (
+        <p className="admin-form-success">La corrección se aplicó y el recálculo quedó encolado.</p>
+      ) : null}
+      {success === "annulled" ? (
+        <p className="admin-form-success">El evento fue anulado lógicamente y dejó de estar visible públicamente.</p>
       ) : null}
       <section className="admin-detail-grid">
         <article>

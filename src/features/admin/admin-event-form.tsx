@@ -68,6 +68,9 @@ type Props = {
   regions: Option[];
   submitLabel: string;
   today: string;
+  expectedUpdatedAt?: string;
+  reasonRequired?: boolean;
+  confirmationText?: string;
 };
 
 function placementsForResolution(
@@ -245,6 +248,9 @@ export function AdminEventForm({
   regions,
   submitLabel,
   today,
+  expectedUpdatedAt,
+  reasonRequired = false,
+  confirmationText,
 }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const formRef = useRef<HTMLFormElement>(null);
@@ -307,6 +313,29 @@ export function AdminEventForm({
       <form ref={formRef} action={formAction} className="admin-event-editor" onSubmit={submit}>
         <input type="hidden" name="placements" value={JSON.stringify(serializedPlacements)} />
         <input type="hidden" name="sources" value={JSON.stringify(sources)} />
+        {expectedUpdatedAt ? (
+          <input type="hidden" name="expectedUpdatedAt" value={expectedUpdatedAt} />
+        ) : null}
+
+        {reasonRequired ? (
+          <section className="admin-form-section">
+            <div>
+              <p className="eyebrow">Trazabilidad</p>
+              <h2>Motivo de la corrección</h2>
+              <small>Quedará registrado junto con los valores anteriores y nuevos.</small>
+            </div>
+            <label className="admin-field-wide">
+              Motivo <span className="admin-required">*</span>
+              <textarea
+                name="reason"
+                required
+                minLength={10}
+                maxLength={500}
+                placeholder="Explicá qué dato se corrige y por qué."
+              />
+            </label>
+          </section>
+        ) : null}
 
         <section className="admin-form-section">
           <div><p className="eyebrow">Identificación</p><h2>Datos del evento</h2></div>
@@ -475,6 +504,15 @@ export function AdminEventForm({
             </article>
           ))}
         </section>
+
+        {confirmationText ? (
+          <section className="admin-form-section">
+            <label className="admin-field-wide">
+              <input name="confirmed" type="checkbox" required />
+              {confirmationText}
+            </label>
+          </section>
+        ) : null}
 
         <div className="admin-form-actions">
           <Link href={cancelHref}>Cancelar</Link>

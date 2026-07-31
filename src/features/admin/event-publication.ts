@@ -18,6 +18,7 @@ export type EventPublicationInput = {
   placements: PublicationPlacement[];
   resolution: EventResolutionInput;
   status: "DRAFT" | "PUBLISHED" | "CORRECTED" | "ANNULLED";
+  operation?: "PUBLISH" | "CORRECT";
 };
 
 export type PublicationValidation = {
@@ -34,8 +35,17 @@ export function validateEventPublication(
   const warnings: string[] = [];
   const expected = placementStructure(input.resolution);
 
-  if (input.status !== "DRAFT") {
-    errors.push("Solo se puede publicar un evento en borrador.");
+  const operation = input.operation ?? "PUBLISH";
+  if (
+    (operation === "PUBLISH" && input.status !== "DRAFT") ||
+    (operation === "CORRECT" &&
+      !["PUBLISHED", "CORRECTED"].includes(input.status))
+  ) {
+    errors.push(
+      operation === "PUBLISH"
+        ? "Solo se puede publicar un evento en borrador."
+        : "Solo se puede corregir un evento publicado o corregido.",
+    );
   }
   if (!input.competitionExists) {
     errors.push("La competencia asociada ya no está disponible.");

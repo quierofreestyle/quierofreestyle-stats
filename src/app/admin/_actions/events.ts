@@ -399,3 +399,211 @@ export async function publishEvent(id: string) {
   revalidatePath(`/admin/eventos/${id}`);
   redirect(`/admin/eventos/${id}?success=published`);
 }
+
+function requiredReason(formData: FormData) {
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (reason.length < 10 || reason.length > 500) {
+    throw new Error("El motivo debe tener entre 10 y 500 caracteres.");
+  }
+  return reason;
+}
+
+function expectedVersion(formData: FormData) {
+  const value = String(formData.get("expectedUpdatedAt") ?? "");
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) {
+    throw new Error("No se pudo verificar la versión del evento. Volvé a cargar la página.");
+  }
+  return date;
+}
+
+export async function correctEvent(
+  id: string,
+  _state: EventFormState,
+  formData: FormData,
+): Promise<EventFormState> {
+  const actor = await requireAdminCapability(
+    EVENT_MANAGE,
+    `/admin/eventos/${id}/corregir`,
+  );
+  try {
+    const reason = requiredReason(formData);
+    const version = expectedVersion(formData);
+    const input = readEventForm(formData);
+    const competitionName = await validateReferences(input);
+    const current = await db.event.findUnique({
+      where: { id },
+      select: { slug: true },
+    });
+    if (!current) throw new Error("El evento ya no existe.");
+    const identity = await createIdentity(input, competitionName, current.slug);
+    const correlationId = randomUUID();
+
+    await db.$transaction(async (tx) => {
+      const before = await tx.event.findUniqueOrThrow({
+        where: { id },
+        include: {
+          placements: {
+            where: { status: "ACTIVE" },
+            include: { members: true },
+            orderBy: [{ position: "asc" }, { slot: "asc" }],
+          },
+          sources: { include: { source: true } },
+        },
+      });
+      const validation = validateEventPublication({
+        competitionExists: true,
+        datePrecision: input.datePrecision,
+        format: input.format,
+        placements: input.placements.map((placement) => ({
+          competitorIds: placement.competitorIds,
+          position: placement.position,
+          type: placement.type,
+        })),
+        resolution: input.resolution,
+        status: before.status,
+        operation: "CORRECT",
+      });
+      if (validation.errors.length) {
+        throw new Error(validation.errors.join(" "));
+      }
+
+      const scalarData = eventData(input, identity);
+      const { status: _draftStatus, ...correctedData } = scalarData;
+      void _draftStatus;
+      const claimed = await tx.event.updateMany({
+        where: {
+          id,
+          status: { in: ["PUBLISHED", "CORRECTED"] },
+          updatedAt: version,
+        },
+        data: { ...correctedData, status: "CORRECTED" },
+      });
+      if (claimed.count !== 1) {
+        throw new Error(
+          "El evento cambió desde que abriste esta pantalla. Recargalo y revisá la corrección antes de confirmar.",
+        );
+      }
+
+      await tx.placementMember.deleteMany({
+        where: { placement: { eventId: id } },
+      });
+      await tx.placement.deleteMany({ where: { eventId: id } });
+      const previousSourceIds = before.sources.map(({ sourceId }) => sourceId);
+      await tx.eventSource.deleteMany({ where: { eventId: id } });
+      if (previousSourceIds.length) {
+        await tx.source.deleteMany({
+          where: { id: { in: previousSourceIds }, events: { none: {} } },
+        });
+      }
+      await tx.event.update({
+        where: { id },
+        data: {
+          placements: { create: placementCreates(input) },
+          sources: { create: sourceCreates(input) },
+        },
+      });
+      const after = JSON.parse(
+        JSON.stringify({ ...input, ...identity, status: "CORRECTED" }),
+      );
+      await tx.recalculationRun.create({
+        data: {
+          correlationId,
+          triggerType: "EVENT_CORRECTED",
+          triggerEntityId: id,
+          mode: "APPLY",
+          status: "QUEUED",
+          initiatedById: actor.id,
+          summary: {
+            eventId: id,
+            participantCount: validation.participantCount,
+            resultCount: validation.resultCount,
+            warnings: validation.warnings,
+          },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "CORRECT",
+          entityKind: "event",
+          entityId: id,
+          beforeData: JSON.parse(JSON.stringify(before)),
+          afterData: after,
+          reason,
+          correlationId,
+        },
+      });
+    });
+  } catch (error) {
+    return { error: eventFormError(error) };
+  }
+  revalidatePath("/admin/eventos");
+  revalidatePath(`/admin/eventos/${id}`);
+  revalidatePath("/eventos");
+  redirect(`/admin/eventos/${id}?success=corrected`);
+}
+
+export async function annulEvent(id: string, formData: FormData) {
+  const actor = await requireAdminCapability(
+    EVENT_MANAGE,
+    `/admin/eventos/${id}/anular`,
+  );
+  let actionError: string | null = null;
+  try {
+    const reason = requiredReason(formData);
+    const version = expectedVersion(formData);
+    const correlationId = randomUUID();
+    await db.$transaction(async (tx) => {
+      const before = await tx.event.findUnique({ where: { id } });
+      if (!before) throw new Error("El evento ya no existe.");
+      const updated = await tx.event.updateMany({
+        where: {
+          id,
+          status: { in: ["PUBLISHED", "CORRECTED"] },
+          updatedAt: version,
+        },
+        data: { status: "ANNULLED" },
+      });
+      if (updated.count !== 1) {
+        throw new Error(
+          "El evento cambió desde que abriste esta pantalla. Recargalo antes de anular.",
+        );
+      }
+      await tx.recalculationRun.create({
+        data: {
+          correlationId,
+          triggerType: "EVENT_ANNULLED",
+          triggerEntityId: id,
+          mode: "APPLY",
+          status: "QUEUED",
+          initiatedById: actor.id,
+          summary: { eventId: id, previousStatus: before.status },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorType: "USER",
+          actorUserId: actor.id,
+          action: "ANNUL",
+          entityKind: "event",
+          entityId: id,
+          beforeData: JSON.parse(JSON.stringify(before)),
+          afterData: { status: "ANNULLED" },
+          reason,
+          correlationId,
+        },
+      });
+    });
+  } catch (error) {
+    actionError = eventFormError(error);
+  }
+  if (actionError) {
+    redirect(`/admin/eventos/${id}/anular?error=${encodeURIComponent(actionError)}`);
+  }
+  revalidatePath("/admin/eventos");
+  revalidatePath(`/admin/eventos/${id}`);
+  revalidatePath("/eventos");
+  redirect(`/admin/eventos/${id}?success=annulled`);
+}
