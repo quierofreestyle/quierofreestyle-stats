@@ -397,8 +397,8 @@ model Subject {
   shareAssets          ShareAsset[]
   declaredEventScopes  Event[]                  @relation("EventScopeDeclarant")
 
-  @@index([type, status])
   @@unique([type, slug])
+  @@index([type, status])
   @@map("subject")
 }
 
@@ -451,11 +451,35 @@ model Competitor {
   birthDateVisibility ProfileFieldVisibility @default(HIDDEN) @map("birth_date_visibility")
   locationVisibility  ProfileFieldVisibility @default(PUBLIC) @map("location_visibility")
 
-  subject    Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  homeRegion Region?           @relation(fields: [homeRegionId], references: [id], onDelete: SetNull)
+  subject    Subject              @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  homeRegion Region?              @relation(fields: [homeRegionId], references: [id], onDelete: SetNull)
   placements PlacementMember[]
+  statistics CompetitorStatistic?
 
   @@map("competitor")
+}
+
+model CompetitorStatistic {
+  competitorId           String    @id @map("competitor_id") @db.Uuid
+  championships          Int       @default(0)
+  runnerUps              Int       @default(0) @map("runner_ups")
+  finals                 Int       @default(0)
+  individualTitles       Int       @default(0) @map("individual_titles")
+  groupTitles            Int       @default(0) @map("group_titles")
+  firstFinalOn           DateTime? @map("first_final_on") @db.Date
+  lastFinalOn            DateTime? @map("last_final_on") @db.Date
+  championshipsReachedAt DateTime? @map("championships_reached_at") @db.Date
+  runnerUpsReachedAt     DateTime? @map("runner_ups_reached_at") @db.Date
+  finalsReachedAt        DateTime? @map("finals_reached_at") @db.Date
+  calculatedAt           DateTime  @default(now()) @map("calculated_at") @db.Timestamptz(3)
+  runId                  String    @map("run_id") @db.Uuid
+
+  competitor Competitor       @relation(fields: [competitorId], references: [subjectId], onDelete: Restrict)
+  run        RecalculationRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+
+  @@index([championships, championshipsReachedAt])
+  @@index([finals, finalsReachedAt])
+  @@map("competitor_statistic")
 }
 
 model Organization {
@@ -993,6 +1017,7 @@ model RecalculationRun {
   initiatedBy AppUser?              @relation("RecalculationInitiator", fields: [initiatedById], references: [id], onDelete: SetNull)
   changes     RecalculationChange[]
   progress    BadgeProgress[]
+  statistics  CompetitorStatistic[]
 
   @@index([status, queuedAt])
   @@map("recalculation_run")

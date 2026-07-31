@@ -16,6 +16,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     user.permissions.has("EVENT_MANAGE") ||
     user.permissions.has("SUBMISSION_REVIEW") ||
     user.permissions.has("AUDIT_READ");
+  const canReadStatistics =
+    user.permissions.has("BADGE_RECALCULATE") ||
+    user.permissions.has("AUDIT_READ");
 
   return (
     <div className="admin-shell">
@@ -28,6 +31,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin">Resumen</Link>
           {canReadSubjects ? <Link href="/admin/competencias">Competencias</Link> : null}
           {canReadEvents ? <Link href="/admin/eventos">Eventos</Link> : null}
+          {canReadStatistics ? <Link href="/admin/estadisticas">Estadísticas</Link> : null}
           {canReadSubjects ? <Link href="/admin/competidores">Competidores</Link> : null}
           {canReadSubjects ? <Link href="/admin/organizaciones">Organizaciones</Link> : null}
           {canReadIssues ? <Link href="/admin/incidencias">Incidencias</Link> : null}

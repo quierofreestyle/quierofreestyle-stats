@@ -129,7 +129,7 @@ describe("migración inicial de PostgreSQL", () => {
     if (databaseDir) await rm(databaseDir, { recursive: true, force: true });
   });
 
-  it("crea las 42 tablas y las extensiones requeridas", async () => {
+  it("crea las 43 tablas y las extensiones requeridas", async () => {
     const tables = await client.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count
        FROM information_schema.tables
@@ -140,12 +140,34 @@ describe("migración inicial de PostgreSQL", () => {
        WHERE extname IN ('pgcrypto', 'citext', 'btree_gist')`,
     );
 
-    expect(Number(tables.rows[0].count)).toBe(42);
+    expect(Number(tables.rows[0].count)).toBe(43);
     expect(extensions.rows.map(({ extname }) => extname).sort()).toEqual([
       "btree_gist",
       "citext",
       "pgcrypto",
     ]);
+  });
+
+  it("crea el almacenamiento derivado de estadísticas por competidor", async () => {
+    const columns = await client.query<{ column_name: string }>(
+      `SELECT column_name
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'competitor_statistic'
+       ORDER BY column_name`,
+    );
+
+    expect(columns.rows.map(({ column_name }) => column_name)).toEqual(
+      expect.arrayContaining([
+        "championships",
+        "competitor_id",
+        "finals",
+        "group_titles",
+        "individual_titles",
+        "run_id",
+        "runner_ups",
+      ]),
+    );
   });
 
   it("permite repetir un slug entre tipos de sujeto, pero no dentro del mismo tipo", async () => {
