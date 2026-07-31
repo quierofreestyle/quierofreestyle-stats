@@ -469,6 +469,8 @@ model CompetitorStatistic {
   firstFinalOn           DateTime? @map("first_final_on") @db.Date
   lastFinalOn            DateTime? @map("last_final_on") @db.Date
   championshipsReachedAt DateTime? @map("championships_reached_at") @db.Date
+  individualTitlesReachedAt DateTime? @map("individual_titles_reached_at") @db.Date
+  groupTitlesReachedAt      DateTime? @map("group_titles_reached_at") @db.Date
   runnerUpsReachedAt     DateTime? @map("runner_ups_reached_at") @db.Date
   finalsReachedAt        DateTime? @map("finals_reached_at") @db.Date
   calculatedAt           DateTime  @default(now()) @map("calculated_at") @db.Timestamptz(3)
@@ -478,6 +480,8 @@ model CompetitorStatistic {
   run        RecalculationRun @relation(fields: [runId], references: [id], onDelete: Restrict)
 
   @@index([championships, championshipsReachedAt])
+  @@index([individualTitles, individualTitlesReachedAt])
+  @@index([groupTitles, groupTitlesReachedAt])
   @@index([finals, finalsReachedAt])
   @@map("competitor_statistic")
 }
