@@ -585,6 +585,7 @@ select {
 }
 
 .admin-placements,
+.admin-health-list,
 .admin-source-list {
   margin: 0;
   padding: 0;
@@ -617,6 +618,43 @@ select {
 .admin-source-list a {
   color: var(--accent);
   overflow-wrap: anywhere;
+}
+
+.admin-health-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.admin-health-list li {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
+  padding: 13px 15px;
+  border-left: 3px solid #e5b957;
+  background: rgba(229, 185, 87, 0.08);
+}
+
+.admin-health-list li[data-severity="ERROR"] {
+  border-left-color: #ea6b71;
+  background: rgba(234, 107, 113, 0.08);
+}
+
+.admin-health-list strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-recalculation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 34px;
+}
+
+.admin-recalculation-actions form {
+  margin: 0;
 }
 
 @media (max-width: 860px) {
