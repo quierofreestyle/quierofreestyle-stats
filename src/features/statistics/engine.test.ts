@@ -42,6 +42,7 @@ describe("motor de estadísticas", () => {
         championships: 1,
         finals: 1,
         groupTitles: 1,
+        groupTitlesReachedAt: new Date("2026-01-05T00:00:00.000Z"),
         runnerUps: 0,
       }),
       expect.objectContaining({
@@ -49,6 +50,7 @@ describe("motor de estadísticas", () => {
         championships: 1,
         finals: 1,
         groupTitles: 1,
+        groupTitlesReachedAt: new Date("2026-01-05T00:00:00.000Z"),
         runnerUps: 0,
       }),
     ]);

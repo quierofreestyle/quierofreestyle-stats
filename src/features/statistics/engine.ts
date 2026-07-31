@@ -26,6 +26,8 @@ export type CompetitorStatisticValue = {
   firstFinalOn: Date | null;
   lastFinalOn: Date | null;
   championshipsReachedAt: Date | null;
+  individualTitlesReachedAt: Date | null;
+  groupTitlesReachedAt: Date | null;
   runnerUpsReachedAt: Date | null;
   finalsReachedAt: Date | null;
 };
@@ -48,6 +50,8 @@ function emptyStatistic(competitorId: string): CompetitorStatisticValue {
     firstFinalOn: null,
     lastFinalOn: null,
     championshipsReachedAt: null,
+    individualTitlesReachedAt: null,
+    groupTitlesReachedAt: null,
     runnerUpsReachedAt: null,
     finalsReachedAt: null,
   };
@@ -164,8 +168,13 @@ export function calculateCompetitorStatistics(
         if (isChampion) {
           value.championships += 1;
           value.championshipsReachedAt = event.occurredOn;
-          if (placement.members.length > 1) value.groupTitles += 1;
-          else value.individualTitles += 1;
+          if (placement.members.length > 1) {
+            value.groupTitles += 1;
+            value.groupTitlesReachedAt = event.occurredOn;
+          } else {
+            value.individualTitles += 1;
+            value.individualTitlesReachedAt = event.occurredOn;
+          }
         }
         if (isRunnerUp) {
           value.runnerUps += 1;
