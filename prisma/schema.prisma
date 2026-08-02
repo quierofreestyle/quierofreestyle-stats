@@ -751,6 +751,8 @@ model BadgeDefinition {
   assignmentMode      BadgeAssignmentMode   @map("assignment_mode")
   nameTemplate        String                @map("name_template")
   descriptionTemplate String                @map("description_template")
+  publicRule          String                @map("public_rule")
+  imageUrl            String?               @map("image_url")
   recipientType       SubjectType           @map("recipient_type")
   permanenceMode      PermanenceMode        @default(PERMANENT) @map("permanence_mode")
   tiePolicy           UniqueTiePolicy?      @map("tie_policy")

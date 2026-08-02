@@ -307,11 +307,35 @@ describe("migración inicial de PostgreSQL", () => {
     );
     const definition = await client.query<{ id: string }>(
       `INSERT INTO badge_definition
-         (code, kind, assignment_mode, name_template, description_template,
-          recipient_type, permanence_mode, tie_policy, status, created_by_id, updated_at)
-       VALUES ($1, 'UNIQUE', 'AUTOMATIC', 'Récord', 'Récord global', 'COMPETITOR',
-               'PERMANENT', 'FIRST_REACHED_NO_INITIAL_HOLDER', 'ACTIVE', $2, CURRENT_TIMESTAMP)
-       RETURNING id`,
+        (
+          code,
+          kind,
+          assignment_mode,
+          name_template,
+          description_template,
+          public_rule,
+          recipient_type,
+          permanence_mode,
+          tie_policy,
+          status,
+          created_by_id,
+          updated_at
+        )
+      VALUES (
+          $1,
+          'UNIQUE',
+          'AUTOMATIC',
+          'Récord',
+          'Récord global',
+          'Se entrega al competidor que mantiene el récord global.',
+          'COMPETITOR',
+          'PERMANENT',
+          'FIRST_REACHED_NO_INITIAL_HOLDER',
+          'ACTIVE',
+          $2,
+          CURRENT_TIMESTAMP
+        )
+      RETURNING id`,
       [`UNIQUE_TEST_${crypto.randomUUID()}`, user.rows[0].id],
     );
     const instance = await client.query<{ id: string }>(
