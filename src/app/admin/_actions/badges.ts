@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { badgeActionError, readBadgeForm, type BadgeFormState, type BadgeFormValues } from "../../../features/admin/badge-form";
+import { isSupportedBadgeMetric } from "../../../features/badges/assignment-engine";
 import { requireAdminCapability } from "../../../server/auth/permissions";
 import { db } from "../../../server/db";
 
@@ -29,9 +30,23 @@ async function validateReferences(values: BadgeFormValues) {
   if (values.assignmentMode === "AUTOMATIC") {
     const metric = await db.metricDefinition.findFirst({
       where: { id: values.metricId!, isActive: true, recipientTypes: { some: { recipientType: values.recipientType } } },
-      select: { id: true },
+      select: { id: true, implementationKey: true },
     });
     if (!metric) throw new Error("La métrica no está disponible para el destinatario seleccionado.");
+    if (values.status === "ACTIVE") {
+      if (values.kind === "UNIQUE") {
+        throw new Error("Las insignias únicas podrán activarse en la próxima versión del motor.");
+      }
+      if (values.recipientType !== "COMPETITOR" || values.scopeType !== "GLOBAL") {
+        throw new Error("Esta versión del motor solo permite activar insignias globales para competidores.");
+      }
+      if (!isSupportedBadgeMetric(metric.implementationKey)) {
+        throw new Error("La métrica seleccionada todavía no puede evaluarse automáticamente. Guardá la insignia como borrador.");
+      }
+      if (values.operator === "FIRST" || values.operator === "TOP_ONE") {
+        throw new Error("El operador seleccionado todavía no puede evaluarse automáticamente. Guardá la insignia como borrador.");
+      }
+    }
   }
 }
 
