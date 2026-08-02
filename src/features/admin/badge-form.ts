@@ -8,6 +8,7 @@ export type BadgeTierInput = {
   displayName: string;
   threshold: number;
   color: string | null;
+  imageUrl: string | null;
 };
 
 export type BadgeFormValues = {
@@ -72,18 +73,22 @@ function readTiers(formData: FormData): BadgeTierInput[] {
   const names = formData.getAll("tierName").map(String);
   const thresholds = formData.getAll("tierThreshold").map(String);
   const colors = formData.getAll("tierColor").map(String);
+  const imageUrls = formData.getAll("tierImageUrl").map(String);
   const tiers = names.map((rawName, index) => {
     const displayName = rawName.trim();
     const threshold = Number(thresholds[index]);
+    const rawImageUrl = imageUrls[index]?.trim() || "";
     if (!displayName || !Number.isFinite(threshold) || threshold < 0) {
       throw new Error("Cada nivel debe tener nombre y un umbral válido.");
     }
+    if (!rawImageUrl) throw new Error("Cada nivel debe tener una URL de imagen.");
     return {
       rank: index + 1,
       code: normalizeBadgeCode(displayName),
       displayName,
       threshold,
       color: colors[index]?.trim() || null,
+      imageUrl: optionalUrl(rawImageUrl),
     };
   });
   if (new Set(tiers.map(({ code }) => code)).size !== tiers.length) throw new Error("Los niveles deben tener nombres diferentes.");

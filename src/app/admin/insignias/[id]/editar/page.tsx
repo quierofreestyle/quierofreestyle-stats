@@ -27,6 +27,6 @@ export default async function EditBadgePage({ params }: Props) {
     scopeType: instance.scope?.scopeType ?? "GLOBAL", competitionId: instance.scope?.competitionId ?? "",
     metricId: rule?.metricId ?? "", operator: rule?.operator ?? "GTE",
     threshold: rule?.baseThreshold?.toString() ?? "", reason: "Actualización de la configuración",
-    tiers: rule?.tiers.map((tier) => ({ rank: tier.rank, code: tier.code, displayName: tier.displayName, threshold: Number(tier.threshold), color: tier.color })) ?? [],
+    tiers: rule?.tiers.map((tier) => ({ rank: tier.rank, code: tier.code, displayName: tier.displayName, threshold: Number(tier.threshold), color: tier.color, imageUrl: tier.imageUrl })) ?? [],
   }} /></>;
 }

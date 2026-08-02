@@ -26,8 +26,27 @@ describe("badge form", () => {
   it("requires strictly increasing tier thresholds", () => {
     const data = baseForm(); data.set("kind", "TIERED"); data.set("operator", "GTE");
     data.append("tierName", "Bronce"); data.append("tierThreshold", "3"); data.append("tierColor", "#cd7f32");
+    data.append("tierImageUrl", "https://example.com/bronce.png");
     data.append("tierName", "Plata"); data.append("tierThreshold", "3"); data.append("tierColor", "#c0c0c0");
+    data.append("tierImageUrl", "https://example.com/plata.png");
     expect(() => readBadgeForm(data)).toThrow("estrictamente crecientes");
+  });
+
+  it("reads a distinct image for every tier", () => {
+    const data = baseForm(); data.set("kind", "TIERED"); data.set("operator", "GTE");
+    data.append("tierName", "Bronce"); data.append("tierThreshold", "1"); data.append("tierColor", "#cd7f32"); data.append("tierImageUrl", "https://example.com/bronce.png");
+    data.append("tierName", "Plata"); data.append("tierThreshold", "3"); data.append("tierColor", "#c0c0c0"); data.append("tierImageUrl", "https://example.com/plata.png");
+    expect(readBadgeForm(data).tiers).toMatchObject([
+      { displayName: "Bronce", imageUrl: "https://example.com/bronce.png" },
+      { displayName: "Plata", imageUrl: "https://example.com/plata.png" },
+    ]);
+  });
+
+  it("requires an image for every tier", () => {
+    const data = baseForm(); data.set("kind", "TIERED"); data.set("operator", "GTE");
+    data.append("tierName", "Bronce"); data.append("tierThreshold", "1"); data.append("tierColor", "#cd7f32"); data.append("tierImageUrl", "https://example.com/bronce.png");
+    data.append("tierName", "Plata"); data.append("tierThreshold", "3"); data.append("tierColor", "#c0c0c0"); data.append("tierImageUrl", "");
+    expect(() => readBadgeForm(data)).toThrow("Cada nivel debe tener una URL de imagen");
   });
 
   it("does not accept a unique badge without top-one semantics", () => {

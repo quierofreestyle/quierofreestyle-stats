@@ -34,7 +34,7 @@ type Props = {
   submitLabel: string;
 };
 
-const emptyTier = (rank: number): BadgeTierInput => ({ rank, code: "", displayName: "", threshold: rank, color: null });
+const emptyTier = (rank: number): BadgeTierInput => ({ rank, code: "", displayName: "", threshold: rank, color: null, imageUrl: null });
 
 export function AdminBadgeForm({ action, competitions, metrics, defaults = {}, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
@@ -59,7 +59,7 @@ export function AdminBadgeForm({ action, competitions, metrics, defaults = {}, s
     }
   }
 
-  function changeTier(index: number, field: "displayName" | "threshold" | "color", value: string) {
+  function changeTier(index: number, field: "displayName" | "threshold" | "color" | "imageUrl", value: string) {
     setTiers((current) => current.map((tier, itemIndex) => itemIndex === index
       ? { ...tier, [field]: field === "threshold" ? Number(value) : value }
       : tier));
@@ -78,7 +78,7 @@ export function AdminBadgeForm({ action, competitions, metrics, defaults = {}, s
             <label>Estado <span className="admin-required">*</span><select name="status" required defaultValue={defaults.status ?? "DRAFT"}><option value="DRAFT">Borrador</option><option value="ACTIVE">Activa</option><option value="ARCHIVED">Archivada</option></select></label>
             <label className="admin-field-wide">Descripción pública <span className="admin-required">*</span><textarea name="description" required maxLength={2000} rows={4} defaultValue={defaults.description} /></label>
             <label className="admin-field-wide">Regla pública <span className="admin-required">*</span><textarea name="publicRule" required maxLength={1000} rows={3} defaultValue={defaults.publicRule} /><small>Explicación comprensible de cómo se obtiene.</small></label>
-            <label className="admin-field-wide">URL de imagen<input type="url" name="imageUrl" defaultValue={defaults.imageUrl} placeholder="https://..." /></label>
+            <label className="admin-field-wide">URL de imagen<input type="url" name="imageUrl" defaultValue={defaults.imageUrl} placeholder="https://..." /><small>{kind === "TIERED" ? "Opcional. Se usa como portada neutral; al alcanzar un nivel se muestra la imagen configurada en ese nivel." : "Imagen pública de la insignia."}</small></label>
           </div>
         </section>
 
@@ -195,6 +195,7 @@ export function AdminBadgeForm({ action, competitions, metrics, defaults = {}, s
                 <label>Nombre<input name="tierName" required value={tier.displayName} onChange={(event) => changeTier(index, "displayName", event.target.value)} placeholder={index === 0 ? "Bronce" : "Plata"} /></label>
                 <label>Umbral<input type="number" name="tierThreshold" required min="0" step="1" value={tier.threshold} onChange={(event) => changeTier(index, "threshold", event.target.value)} /></label>
                 <label>Color<input name="tierColor" value={tier.color ?? ""} onChange={(event) => changeTier(index, "color", event.target.value)} placeholder="#CD7F32" /></label>
+                <label>URL de imagen <span className="admin-required">*</span><input type="url" name="tierImageUrl" required value={tier.imageUrl ?? ""} onChange={(event) => changeTier(index, "imageUrl", event.target.value)} placeholder="https://..." /><small>Se muestra cuando este es el nivel vigente.</small></label>
                 <button type="button" disabled={tiers.length <= 2} onClick={() => setTiers((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Quitar</button>
               </div>)}
             </div>

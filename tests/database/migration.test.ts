@@ -148,6 +148,18 @@ describe("migración inicial de PostgreSQL", () => {
     ]);
   });
 
+  it("agrega una imagen configurable a cada nivel de insignia", async () => {
+    const columns = await client.query<{ column_name: string; is_nullable: string }>(
+      `SELECT column_name, is_nullable
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'badge_tier'
+         AND column_name = 'image_url'`,
+    );
+
+    expect(columns.rows).toEqual([{ column_name: "image_url", is_nullable: "YES" }]);
+  });
+
   it("crea el almacenamiento derivado de estadísticas por competidor", async () => {
     const columns = await client.query<{ column_name: string }>(
       `SELECT column_name

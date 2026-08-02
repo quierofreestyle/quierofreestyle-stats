@@ -17,7 +17,7 @@ function snapshot(values: BadgeFormValues) {
     status: values.status, scopeType: values.scopeType,
     competitionId: values.competitionId, metricId: values.metricId,
     operator: values.operator, threshold: values.threshold,
-    tiers: values.tiers.map(({ rank, displayName, threshold }) => ({ rank, displayName, threshold })),
+    tiers: values.tiers.map(({ rank, displayName, threshold, color, imageUrl }) => ({ rank, displayName, threshold, color, imageUrl })),
   };
 }
 
@@ -45,7 +45,7 @@ function ruleData(values: BadgeFormValues, versionNumber: number, actorId: strin
     createdById: actorId, reason: values.reason!,
     tiers: values.kind === "TIERED" ? { create: values.tiers.map((tier) => ({
       rank: tier.rank, code: tier.code, displayName: tier.displayName,
-      threshold: tier.threshold, color: tier.color,
+      threshold: tier.threshold, color: tier.color, imageUrl: tier.imageUrl,
     })) } : undefined,
   };
 }
