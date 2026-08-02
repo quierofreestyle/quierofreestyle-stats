@@ -1,0 +1,758 @@
+diff --git a/prisma/migrations/202607310003_badge_management/migration.sql b/prisma/migrations/202607310003_badge_management/migration.sql
+new file mode 100644
+index 0000000..d784874
+--- /dev/null
++++ b/prisma/migrations/202607310003_badge_management/migration.sql
+@@ -0,0 +1,6 @@
++ALTER TABLE "badge_definition"
++ADD COLUMN "public_rule" TEXT NOT NULL DEFAULT '',
++ADD COLUMN "image_url" TEXT;
++
++ALTER TABLE "badge_definition"
++ALTER COLUMN "public_rule" DROP DEFAULT;
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 1ae4d08..6d8f217 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -747,6 +747,8 @@ model BadgeDefinition {
+   assignmentMode      BadgeAssignmentMode   @map("assignment_mode")
+   nameTemplate        String                @map("name_template")
+   descriptionTemplate String                @map("description_template")
++  publicRule          String                @map("public_rule")
++  imageUrl            String?               @map("image_url")
+   recipientType       SubjectType           @map("recipient_type")
+   permanenceMode      PermanenceMode        @default(PERMANENT) @map("permanence_mode")
+   tiePolicy           UniqueTiePolicy?      @map("tie_policy")
+diff --git a/src/app/admin/_actions/badges.ts b/src/app/admin/_actions/badges.ts
+new file mode 100644
+index 0000000..c520093
+--- /dev/null
++++ b/src/app/admin/_actions/badges.ts
+@@ -0,0 +1,153 @@
++"use server";
++
++import { revalidatePath } from "next/cache";
++import { redirect } from "next/navigation";
++
++import { badgeActionError, readBadgeForm, type BadgeFormState, type BadgeFormValues } from "../../../features/admin/badge-form";
++import { requireAdminCapability } from "../../../server/auth/permissions";
++import { db } from "../../../server/db";
++
++const BADGE_MANAGE = ["BADGE_MANAGE"] as const;
++
++function snapshot(values: BadgeFormValues) {
++  return {
++    code: values.code, name: values.name, slug: values.slug,
++    kind: values.kind, assignmentMode: values.assignmentMode,
++    recipientType: values.recipientType, permanenceMode: values.permanenceMode,
++    status: values.status, scopeType: values.scopeType,
++    competitionId: values.competitionId, metricId: values.metricId,
++    operator: values.operator, threshold: values.threshold,
++    tiers: values.tiers.map(({ rank, displayName, threshold }) => ({ rank, displayName, threshold })),
++  };
++}
++
++async function validateReferences(values: BadgeFormValues) {
++  if (values.scopeType === "COMPETITION") {
++    const competition = await db.competition.findUnique({ where: { subjectId: values.competitionId! }, select: { subjectId: true } });
++    if (!competition) throw new Error("La competencia seleccionada no existe.");
++  }
++  if (values.assignmentMode === "AUTOMATIC") {
++    const metric = await db.metricDefinition.findFirst({
++      where: { id: values.metricId!, isActive: true, recipientTypes: { some: { recipientType: values.recipientType } } },
++      select: { id: true },
++    });
++    if (!metric) throw new Error("La métrica no está disponible para el destinatario seleccionado.");
++  }
++}
++
++function ruleData(values: BadgeFormValues, versionNumber: number, actorId: string) {
++  if (values.assignmentMode !== "AUTOMATIC") return undefined;
++  return {
++    metricId: values.metricId!, versionNumber,
++    aggregation: "SUM" as const, operator: values.operator!,
++    baseThreshold: values.threshold, config: { scopeType: values.scopeType },
++    status: values.status === "ACTIVE" ? "ACTIVE" as const : "DRAFT" as const,
++    createdById: actorId, reason: values.reason!,
++    tiers: values.kind === "TIERED" ? { create: values.tiers.map((tier) => ({
++      rank: tier.rank, code: tier.code, displayName: tier.displayName,
++      threshold: tier.threshold, color: tier.color,
++    })) } : undefined,
++  };
++}
++
++function instanceData(values: BadgeFormValues) {
++  return {
++    slug: values.slug, displayName: values.name, description: values.description,
++    status: values.status, publishedAt: values.status === "ACTIVE" ? new Date() : null,
++    scope: { create: {
++      scopeType: values.scopeType,
++      competitionId: values.scopeType === "COMPETITION" ? values.competitionId : null,
++    } },
++  };
++}
++
++export async function createBadge(_state: BadgeFormState, formData: FormData): Promise<BadgeFormState> {
++  const actor = await requireAdminCapability(BADGE_MANAGE, "/admin/insignias/nueva");
++  try {
++    const values = readBadgeForm(formData);
++    await validateReferences(values);
++    await db.$transaction(async (tx) => {
++      const created = await tx.badgeDefinition.create({
++        data: {
++          code: values.code, kind: values.kind, assignmentMode: values.assignmentMode,
++          nameTemplate: values.name, descriptionTemplate: values.description,
++          publicRule: values.publicRule, imageUrl: values.imageUrl,
++          recipientType: values.recipientType, permanenceMode: values.permanenceMode,
++          tiePolicy: values.kind === "UNIQUE" ? "FIRST_REACHED_NO_INITIAL_HOLDER" : null,
++          status: values.status, archivedAt: values.status === "ARCHIVED" ? new Date() : null,
++          createdById: actor.id,
++          instances: { create: instanceData(values) },
++          ruleVersions: ruleData(values, 1, actor.id) ? { create: ruleData(values, 1, actor.id)! } : undefined,
++        },
++      });
++      await tx.auditLog.create({ data: {
++        actorType: "USER", actorUserId: actor.id, action: "CREATE",
++        entityKind: "badge_definition", entityId: created.id,
++        afterData: snapshot(values), reason: "Alta administrativa de insignia",
++      } });
++    });
++  } catch (error) { return { error: badgeActionError(error) }; }
++  revalidatePath("/admin/insignias");
++  redirect("/admin/insignias?success=created");
++}
++
++export async function updateBadge(id: string, _state: BadgeFormState, formData: FormData): Promise<BadgeFormState> {
++  const actor = await requireAdminCapability(BADGE_MANAGE, `/admin/insignias/${id}/editar`);
++  try {
++    const values = readBadgeForm(formData);
++    await validateReferences(values);
++    await db.$transaction(async (tx) => {
++      const before = await tx.badgeDefinition.findUniqueOrThrow({
++        where: { id }, include: { instances: { include: { scope: true } }, ruleVersions: { orderBy: { versionNumber: "desc" }, take: 1 } },
++      });
++      const instance = before.instances[0];
++      if (!instance) throw new Error("La insignia no tiene una instancia administrable.");
++      const nextVersion = (before.ruleVersions[0]?.versionNumber ?? 0) + 1;
++
++      await tx.badgeRuleVersion.updateMany({ where: { badgeDefinitionId: id, status: { in: ["DRAFT", "ACTIVE"] } }, data: { status: "RETIRED" } });
++      await tx.badgeDefinition.update({ where: { id }, data: {
++        code: values.code, kind: values.kind, assignmentMode: values.assignmentMode,
++        nameTemplate: values.name, descriptionTemplate: values.description,
++        publicRule: values.publicRule, imageUrl: values.imageUrl,
++        recipientType: values.recipientType, permanenceMode: values.permanenceMode,
++        tiePolicy: values.kind === "UNIQUE" ? "FIRST_REACHED_NO_INITIAL_HOLDER" : null,
++        status: values.status, archivedAt: values.status === "ARCHIVED" ? new Date() : null,
++        ruleVersions: ruleData(values, nextVersion, actor.id) ? { create: ruleData(values, nextVersion, actor.id)! } : undefined,
++      } });
++      await tx.badgeInstance.update({ where: { id: instance.id }, data: {
++        slug: values.slug, displayName: values.name, description: values.description,
++        status: values.status, publishedAt: values.status === "ACTIVE" ? (instance.publishedAt ?? new Date()) : null,
++      } });
++      await tx.badgeScope.upsert({ where: { badgeInstanceId: instance.id }, create: {
++        badgeInstanceId: instance.id, scopeType: values.scopeType,
++        competitionId: values.scopeType === "COMPETITION" ? values.competitionId : null,
++      }, update: {
++        scopeType: values.scopeType,
++        competitionId: values.scopeType === "COMPETITION" ? values.competitionId : null,
++        organizationId: null, seasonId: null, regionId: null,
++      } });
++      await tx.auditLog.create({ data: {
++        actorType: "USER", actorUserId: actor.id, action: values.status === "ARCHIVED" ? "ARCHIVE" : "UPDATE",
++        entityKind: "badge_definition", entityId: id,
++        beforeData: { code: before.code, name: before.nameTemplate, status: before.status, version: before.ruleVersions[0]?.versionNumber ?? null },
++        afterData: snapshot(values), reason: values.reason ?? "Edición administrativa de insignia",
++      } });
++    });
++  } catch (error) { return { error: badgeActionError(error) }; }
++  revalidatePath("/admin/insignias");
++  redirect("/admin/insignias?success=updated");
++}
++
++export async function archiveBadge(id: string) {
++  const actor = await requireAdminCapability(BADGE_MANAGE, "/admin/insignias");
++  await db.$transaction(async (tx) => {
++    const before = await tx.badgeDefinition.findUniqueOrThrow({ where: { id }, select: { status: true } });
++    await tx.badgeDefinition.update({ where: { id }, data: { status: "ARCHIVED", archivedAt: new Date(), instances: { updateMany: { where: {}, data: { status: "ARCHIVED" } } } } });
++    await tx.auditLog.create({ data: {
++      actorType: "USER", actorUserId: actor.id, action: "ARCHIVE", entityKind: "badge_definition", entityId: id,
++      beforeData: { status: before.status }, afterData: { status: "ARCHIVED" }, reason: "Archivado administrativo sin eliminación",
++    } });
++  });
++  revalidatePath("/admin/insignias");
++  redirect("/admin/insignias?success=archived");
++}
+diff --git a/src/app/admin/insignias/[id]/editar/page.tsx b/src/app/admin/insignias/[id]/editar/page.tsx
+new file mode 100644
+index 0000000..6f7e7bb
+--- /dev/null
++++ b/src/app/admin/insignias/[id]/editar/page.tsx
+@@ -0,0 +1,32 @@
++import { notFound } from "next/navigation";
++
++import { updateBadge } from "../../../_actions/badges";
++import { AdminBadgeForm } from "../../../../../features/admin/admin-badge-form";
++import { requireAdminCapability } from "../../../../../server/auth/permissions";
++import { db } from "../../../../../server/db";
++
++type Props = { params: Promise<{ id: string }> };
++export default async function EditBadgePage({ params }: Props) {
++  const { id } = await params;
++  await requireAdminCapability(["BADGE_MANAGE"], `/admin/insignias/${id}/editar`);
++  const [badge, competitions, metrics] = await Promise.all([
++    db.badgeDefinition.findUnique({ where: { id }, include: {
++      instances: { take: 1, include: { scope: true } },
++      ruleVersions: { orderBy: { versionNumber: "desc" }, take: 1, include: { tiers: { orderBy: { rank: "asc" } } } },
++    } }),
++    db.competition.findMany({ where: { subject: { status: { in: ["DRAFT", "ACTIVE"] } } }, include: { subject: true }, orderBy: { subject: { displayName: "asc" } } }),
++    db.metricDefinition.findMany({ where: { isActive: true }, include: { recipientTypes: true }, orderBy: { name: "asc" } }),
++  ]);
++  if (!badge || !badge.instances[0]) notFound();
++  const instance = badge.instances[0]; const rule = badge.ruleVersions[0];
++  return <><header className="admin-header"><div><p className="eyebrow">Insignias</p><h1>Editar insignia</h1></div><span className="admin-status">{badge.code}</span></header><p className="admin-required-note"><span className="admin-required">*</span> Campos obligatorios</p><AdminBadgeForm action={updateBadge.bind(null, id)} submitLabel="Guardar nueva versión" competitions={competitions.map((item) => ({ id: item.subjectId, label: item.subject.displayName }))} metrics={metrics.map((item) => ({ id: item.id, label: item.name, recipientTypes: item.recipientTypes.map(({ recipientType }) => recipientType) }))} defaults={{
++    code: badge.code, name: instance.displayName, slug: instance.slug, description: instance.description,
++    publicRule: badge.publicRule, imageUrl: badge.imageUrl ?? "", kind: badge.kind,
++    assignmentMode: badge.assignmentMode, recipientType: badge.recipientType,
++    permanenceMode: badge.permanenceMode, status: badge.status,
++    scopeType: instance.scope?.scopeType ?? "GLOBAL", competitionId: instance.scope?.competitionId ?? "",
++    metricId: rule?.metricId ?? "", operator: rule?.operator ?? "GTE",
++    threshold: rule?.baseThreshold?.toString() ?? "", reason: "Actualización de la configuración",
++    tiers: rule?.tiers.map((tier) => ({ rank: tier.rank, code: tier.code, displayName: tier.displayName, threshold: Number(tier.threshold), color: tier.color })) ?? [],
++  }} /></>;
++}
+diff --git a/src/app/admin/insignias/nueva/page.tsx b/src/app/admin/insignias/nueva/page.tsx
+new file mode 100644
+index 0000000..4e89d79
+--- /dev/null
++++ b/src/app/admin/insignias/nueva/page.tsx
+@@ -0,0 +1,13 @@
++import { createBadge } from "../../_actions/badges";
++import { AdminBadgeForm } from "../../../../features/admin/admin-badge-form";
++import { requireAdminCapability } from "../../../../server/auth/permissions";
++import { db } from "../../../../server/db";
++
++export default async function NewBadgePage() {
++  await requireAdminCapability(["BADGE_MANAGE"], "/admin/insignias/nueva");
++  const [competitions, metrics] = await Promise.all([
++    db.competition.findMany({ where: { subject: { status: { in: ["DRAFT", "ACTIVE"] } } }, include: { subject: true }, orderBy: { subject: { displayName: "asc" } } }),
++    db.metricDefinition.findMany({ where: { isActive: true }, include: { recipientTypes: true }, orderBy: { name: "asc" } }),
++  ]);
++  return <><header className="admin-header"><div><p className="eyebrow">Insignias</p><h1>Nueva insignia</h1></div></header><p className="admin-required-note"><span className="admin-required">*</span> Campos obligatorios</p><AdminBadgeForm action={createBadge} submitLabel="Crear insignia" competitions={competitions.map((item) => ({ id: item.subjectId, label: item.subject.displayName }))} metrics={metrics.map((item) => ({ id: item.id, label: item.name, recipientTypes: item.recipientTypes.map(({ recipientType }) => recipientType) }))} /></>;
++}
+diff --git a/src/app/admin/insignias/page.tsx b/src/app/admin/insignias/page.tsx
+new file mode 100644
+index 0000000..ba75ca3
+--- /dev/null
++++ b/src/app/admin/insignias/page.tsx
+@@ -0,0 +1,62 @@
++import Link from "next/link";
++import type { Metadata } from "next";
++
++import { archiveBadge } from "../_actions/badges";
++import { adminLabel, formatAdminDate } from "../../../features/admin/format";
++import { requireAdminCapability } from "../../../server/auth/permissions";
++import { db } from "../../../server/db";
++
++type Props = { searchParams: Promise<{ q?: string; status?: string; success?: string }> };
++export const metadata: Metadata = { title: "Insignias · Administración" };
++export const dynamic = "force-dynamic";
++
++const messages: Record<string, string> = {
++  created: "La insignia se creó correctamente.",
++  updated: "La insignia y su versión de regla se actualizaron.",
++  archived: "La insignia fue archivada sin eliminar su historial.",
++};
++
++export default async function AdminBadgesPage({ searchParams }: Props) {
++  const user = await requireAdminCapability(["BADGE_READ", "BADGE_MANAGE"], "/admin/insignias");
++  const canManage = user.permissions.has("BADGE_MANAGE");
++  const query = await searchParams;
++  const status = ["DRAFT", "ACTIVE", "ARCHIVED"].includes(query.status ?? "") ? query.status as "DRAFT" | "ACTIVE" | "ARCHIVED" : undefined;
++  const badges = await db.badgeDefinition.findMany({
++    where: {
++      ...(status ? { status } : {}),
++      ...(query.q ? { OR: [
++        { code: { contains: query.q, mode: "insensitive" } },
++        { nameTemplate: { contains: query.q, mode: "insensitive" } },
++      ] } : {}),
++    },
++    orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
++    include: {
++      instances: { take: 1, include: { scope: { include: { competition: { include: { subject: true } } } } } },
++      ruleVersions: { orderBy: { versionNumber: "desc" }, take: 1, include: { metric: true } },
++    },
++  });
++
++  return <>
++    <header className="admin-header"><div><p className="eyebrow">Reconocimientos</p><h1>Insignias</h1></div>{canManage ? <Link className="admin-primary-action" href="/admin/insignias/nueva">Nueva insignia</Link> : <span className="admin-status">Solo lectura</span>}</header>
++    {query.success ? <p className="admin-form-success">{messages[query.success] ?? "Operación completada."}</p> : null}
++    <section className="admin-welcome badge-admin-summary"><p className="eyebrow">Alcance de este bloque</p><h2>Definiciones y reglas</h2><p>Configurá la identidad, el ámbito y la regla versionada. Los otorgamientos automáticos y editoriales se implementarán en el motor siguiente.</p></section>
++    <form className="admin-filters" action="/admin/insignias">
++      <label>Buscar<input name="q" defaultValue={query.q} placeholder="Nombre o código" /></label>
++      <label>Estado<select name="status" defaultValue={status ?? ""}><option value="">Todos</option><option value="DRAFT">Borrador</option><option value="ACTIVE">Activa</option><option value="ARCHIVED">Archivada</option></select></label>
++      <button type="submit">Filtrar</button>{query.q || status ? <Link href="/admin/insignias">Limpiar</Link> : null}
++    </form>
++    <section className="admin-table-wrap">
++      <div className="admin-table-heading"><p>{badges.length} insignias encontradas</p></div>
++      <table className="admin-table"><thead><tr><th>Insignia</th><th>Tipo</th><th>Asignación</th><th>Destinatario</th><th>Ámbito</th><th>Regla</th><th>Estado</th><th>Actualizada</th>{canManage ? <th>Acción</th> : null}</tr></thead>
++        <tbody>{badges.map((badge) => {
++          const instance = badge.instances[0]; const rule = badge.ruleVersions[0];
++          const scope = instance?.scope?.scopeType === "COMPETITION" ? instance.scope.competition?.subject.displayName ?? "Competencia" : "Global";
++          return <tr key={badge.id}>
++            <td><strong>{badge.nameTemplate}</strong><small>{badge.code}</small></td><td>{adminLabel(badge.kind)}</td><td>{adminLabel(badge.assignmentMode)}</td><td>{adminLabel(badge.recipientType)}</td><td>{scope}</td><td>{rule ? `${rule.metric.name} · v${rule.versionNumber}` : "Criterio editorial"}</td><td><span className={`admin-pill ${badge.status.toLowerCase()}`}>{adminLabel(badge.status)}</span></td><td>{formatAdminDate(badge.updatedAt)}</td>
++            {canManage ? <td><div className="admin-row-actions"><Link className="admin-row-action" href={`/admin/insignias/${badge.id}/editar`}>Editar</Link>{badge.status !== "ARCHIVED" ? <form action={archiveBadge.bind(null, badge.id)}><button type="submit">Archivar</button></form> : null}</div></td> : null}
++          </tr>;
++        })}{!badges.length ? <tr><td colSpan={canManage ? 9 : 8}>No hay insignias que coincidan con la búsqueda.</td></tr> : null}</tbody>
++      </table>
++    </section>
++  </>;
++}
+diff --git a/src/app/admin/layout.tsx b/src/app/admin/layout.tsx
+index 69fdc27..261b109 100644
+--- a/src/app/admin/layout.tsx
++++ b/src/app/admin/layout.tsx
+@@ -19,6 +19,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
+   const canReadStatistics =
+     user.permissions.has("BADGE_RECALCULATE") ||
+     user.permissions.has("AUDIT_READ");
++  const canReadBadges =
++    user.permissions.has("BADGE_READ") ||
++    user.permissions.has("BADGE_MANAGE");
+ 
+   return (
+     <div className="admin-shell">
+@@ -32,6 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
+           {canReadSubjects ? <Link href="/admin/competencias">Competencias</Link> : null}
+           {canReadEvents ? <Link href="/admin/eventos">Eventos</Link> : null}
+           {canReadStatistics ? <Link href="/admin/estadisticas">Estadísticas</Link> : null}
++          {canReadBadges ? <Link href="/admin/insignias">Insignias</Link> : null}
+           {canReadSubjects ? <Link href="/admin/competidores">Competidores</Link> : null}
+           {canReadSubjects ? <Link href="/admin/organizaciones">Organizaciones</Link> : null}
+           {canReadIssues ? <Link href="/admin/incidencias">Incidencias</Link> : null}
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 55744fa..6f58a0c 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1737,6 +1737,76 @@ a {
+   margin-top: 34px;
+ }
+ 
++.badge-editor {
++  display: grid;
++  grid-template-columns: 1fr;
++  max-width: 1100px;
++  padding: 0;
++  border: 0;
++  background: transparent;
++}
++
++.badge-editor > * {
++  grid-column: 1;
++}
++
++.badge-tier-list {
++  display: grid;
++  gap: 12px;
++}
++
++.badge-tier-row {
++  display: grid;
++  grid-template-columns: 38px minmax(150px, 1fr) 130px 150px auto;
++  align-items: end;
++  gap: 12px;
++  padding: 14px;
++  border: 1px solid var(--line);
++  background: var(--bg);
++}
++
++.badge-tier-row > strong {
++  align-self: center;
++  color: var(--accent);
++  text-align: center;
++}
++
++.badge-tier-row button,
++.admin-row-actions button,
++.badge-tiers .admin-section-heading button {
++  min-height: 38px;
++  padding: 0 12px;
++  border: 1px solid var(--line);
++  background: transparent;
++  color: var(--muted);
++  cursor: pointer;
++}
++
++.badge-tier-row button:disabled {
++  cursor: not-allowed;
++  opacity: 0.4;
++}
++
++.admin-row-actions {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++}
++
++.admin-row-actions form {
++  margin: 0;
++}
++
++.admin-table td small {
++  display: block;
++  margin-top: 4px;
++  color: var(--muted);
++}
++
++.badge-admin-summary {
++  margin-bottom: 24px;
++}
++
+ .admin-form-section {
+   display: grid;
+   grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+@@ -1987,6 +2057,15 @@ a {
+   .admin-form-actions {
+     grid-column: 1;
+   }
++
++  .badge-tier-row {
++    grid-template-columns: 34px 1fr;
++  }
++
++  .badge-tier-row > label,
++  .badge-tier-row > button {
++    grid-column: 2;
++  }
+ }
+ 
+ .placement-list p a {
+diff --git a/src/features/admin/admin-badge-form.tsx b/src/features/admin/admin-badge-form.tsx
+new file mode 100644
+index 0000000..106565f
+--- /dev/null
++++ b/src/features/admin/admin-badge-form.tsx
+@@ -0,0 +1,133 @@
++"use client";
++
++import Link from "next/link";
++import { type FormEvent, useActionState, useEffect, useRef, useState } from "react";
++
++import type { BadgeFormState, BadgeTierInput } from "./badge-form";
++
++type Option = { id: string; label: string; recipientTypes?: string[] };
++type Defaults = {
++  code?: string;
++  name?: string;
++  slug?: string;
++  description?: string;
++  publicRule?: string;
++  imageUrl?: string;
++  kind?: string;
++  assignmentMode?: string;
++  recipientType?: string;
++  permanenceMode?: string;
++  status?: string;
++  scopeType?: string;
++  competitionId?: string;
++  metricId?: string;
++  operator?: string;
++  threshold?: string;
++  reason?: string;
++  tiers?: BadgeTierInput[];
++};
++type Props = {
++  action: (state: BadgeFormState, formData: FormData) => Promise<BadgeFormState>;
++  competitions: Option[];
++  metrics: Option[];
++  defaults?: Defaults;
++  submitLabel: string;
++};
++
++const emptyTier = (rank: number): BadgeTierInput => ({ rank, code: "", displayName: "", threshold: rank, color: null });
++
++export function AdminBadgeForm({ action, competitions, metrics, defaults = {}, submitLabel }: Props) {
++  const [state, formAction, pending] = useActionState(action, {});
++  const formRef = useRef<HTMLFormElement>(null);
++  const [valid, setValid] = useState(false);
++  const [kind, setKind] = useState(defaults.kind ?? "ACHIEVEMENT");
++  const [mode, setMode] = useState(defaults.assignmentMode ?? "AUTOMATIC");
++  const [recipient, setRecipient] = useState(defaults.recipientType ?? "COMPETITOR");
++  const [scope, setScope] = useState(defaults.scopeType ?? "GLOBAL");
++  const [tiers, setTiers] = useState(defaults.tiers?.length ? defaults.tiers : [emptyTier(1), emptyTier(2)]);
++
++  const availableMetrics = metrics.filter((metric) => metric.recipientTypes?.includes(recipient));
++
++  function updateValidity() { setValid(formRef.current?.checkValidity() ?? false); }
++  useEffect(updateValidity, [kind, mode, recipient, scope, tiers]);
++
++  function submit(event: FormEvent<HTMLFormElement>) {
++    if (!event.currentTarget.checkValidity()) {
++      event.preventDefault();
++      event.currentTarget.reportValidity();
++    }
++  }
++
++  function changeTier(index: number, field: "displayName" | "threshold" | "color", value: string) {
++    setTiers((current) => current.map((tier, itemIndex) => itemIndex === index
++      ? { ...tier, [field]: field === "threshold" ? Number(value) : value }
++      : tier));
++  }
++
++  return (
++    <>
++      {state.error ? <p className="admin-form-error" role="alert">{state.error}</p> : null}
++      <form ref={formRef} action={formAction} className="admin-editor badge-editor" onInput={updateValidity} onSubmit={submit}>
++        <section className="admin-form-section">
++          <div><p className="eyebrow">Identidad pública</p><h2>Presentación</h2></div>
++          <div className="admin-form-grid">
++            <label>Nombre <span className="admin-required">*</span><input name="name" required maxLength={160} defaultValue={defaults.name} /></label>
++            <label>Código <span className="admin-required">*</span><input name="code" required maxLength={80} placeholder="MAXIMO_GANADOR" defaultValue={defaults.code} /></label>
++            <label>Slug <span className="admin-required">*</span><input name="slug" required maxLength={160} placeholder="maximo-ganador" defaultValue={defaults.slug} /></label>
++            <label>Estado <span className="admin-required">*</span><select name="status" required defaultValue={defaults.status ?? "DRAFT"}><option value="DRAFT">Borrador</option><option value="ACTIVE">Activa</option><option value="ARCHIVED">Archivada</option></select></label>
++            <label className="admin-field-wide">Descripción pública <span className="admin-required">*</span><textarea name="description" required maxLength={2000} rows={4} defaultValue={defaults.description} /></label>
++            <label className="admin-field-wide">Regla pública <span className="admin-required">*</span><textarea name="publicRule" required maxLength={1000} rows={3} defaultValue={defaults.publicRule} /><small>Explicación comprensible de cómo se obtiene.</small></label>
++            <label className="admin-field-wide">URL de imagen<input type="url" name="imageUrl" defaultValue={defaults.imageUrl} placeholder="https://..." /></label>
++          </div>
++        </section>
++
++        <section className="admin-form-section">
++          <div><p className="eyebrow">Comportamiento</p><h2>Tipo y destinatario</h2></div>
++          <div className="admin-form-grid">
++            <label>Mecánica <span className="admin-required">*</span><select name="kind" value={kind} onChange={(event) => setKind(event.target.value)}><option value="UNIQUE">Única</option><option value="ACHIEVEMENT">De logro</option><option value="TIERED" disabled={mode === "EDITORIAL"}>Por niveles</option></select><small>Define cómo se conserva y progresa el reconocimiento.</small></label>
++            <label>Asignación <span className="admin-required">*</span><select name="assignmentMode" value={mode} onChange={(event) => { const next = event.target.value; setMode(next); if (next === "EDITORIAL" && kind === "TIERED") setKind("ACHIEVEMENT"); }}><option value="AUTOMATIC">Automática</option><option value="EDITORIAL">Editorial</option></select><small>Editorial requiere intervención de un gestor autorizado.</small></label>
++            <label>Destinatario <span className="admin-required">*</span><select name="recipientType" value={recipient} onChange={(event) => setRecipient(event.target.value)}><option value="COMPETITOR">Competidor</option><option value="COMPETITION">Competencia</option><option value="ORGANIZATION">Organización</option></select></label>
++            <label>Permanencia <span className="admin-required">*</span><select name="permanenceMode" defaultValue={defaults.permanenceMode ?? "PERMANENT"}><option value="PERMANENT">Permanente</option><option value="TEMPORARY">Temporal</option></select></label>
++          </div>
++        </section>
++
++        <section className="admin-form-section">
++          <div><p className="eyebrow">Cobertura</p><h2>Ámbito</h2></div>
++          <div className="admin-form-grid">
++            <label>Ámbito <span className="admin-required">*</span><select name="scopeType" value={scope} onChange={(event) => setScope(event.target.value)}><option value="GLOBAL">Global</option><option value="COMPETITION">Por competencia</option></select></label>
++            {scope === "COMPETITION" ? <label>Competencia <span className="admin-required">*</span><select name="competitionId" required defaultValue={defaults.competitionId ?? ""}><option value="" disabled>Seleccionar</option>{competitions.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label> : null}
++          </div>
++        </section>
++
++        {mode === "AUTOMATIC" ? (
++          <section className="admin-form-section">
++            <div><p className="eyebrow">Regla controlada</p><h2>Cálculo</h2></div>
++            <div className="admin-form-grid">
++              <label>Métrica <span className="admin-required">*</span><select name="metricId" required defaultValue={availableMetrics.some(({ id }) => id === defaults.metricId) ? defaults.metricId : ""}><option value="" disabled>Seleccionar</option>{availableMetrics.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
++              <label>Operador <span className="admin-required">*</span><select name="operator" required value={kind === "UNIQUE" ? "TOP_ONE" : defaults.operator ?? "GTE"} disabled={kind === "UNIQUE"}><option value="GTE">Mayor o igual</option><option value="EQ">Igual</option><option value="TOP_ONE">Máximo actual</option><option value="FIRST">Primero en lograrlo</option></select>{kind === "UNIQUE" ? <input type="hidden" name="operator" value="TOP_ONE" /> : null}</label>
++              {kind !== "TIERED" ? <label>Umbral<input type="number" name="threshold" min="0" step="1" defaultValue={defaults.threshold ?? "1"} /></label> : null}
++              <label className="admin-field-wide">Motivo de la versión <span className="admin-required">*</span><textarea name="reason" required maxLength={500} rows={2} defaultValue={defaults.reason ?? (defaults.name ? "Actualización de la configuración" : "Versión inicial")} /></label>
++            </div>
++          </section>
++        ) : null}
++
++        {kind === "TIERED" ? (
++          <section className="admin-form-section badge-tiers">
++            <div className="admin-section-heading"><div><p className="eyebrow">Progresión</p><h2>Niveles</h2></div><button type="button" onClick={() => setTiers((current) => [...current, emptyTier(current.length + 1)])}>Agregar nivel</button></div>
++            <div className="badge-tier-list">
++              {tiers.map((tier, index) => <div className="badge-tier-row" key={index}>
++                <strong>{index + 1}</strong>
++                <label>Nombre<input name="tierName" required value={tier.displayName} onChange={(event) => changeTier(index, "displayName", event.target.value)} placeholder={index === 0 ? "Bronce" : "Plata"} /></label>
++                <label>Umbral<input type="number" name="tierThreshold" required min="0" step="1" value={tier.threshold} onChange={(event) => changeTier(index, "threshold", event.target.value)} /></label>
++                <label>Color<input name="tierColor" value={tier.color ?? ""} onChange={(event) => changeTier(index, "color", event.target.value)} placeholder="#CD7F32" /></label>
++                <button type="button" disabled={tiers.length <= 2} onClick={() => setTiers((current) => current.filter((_, itemIndex) => itemIndex !== index))}>Quitar</button>
++              </div>)}
++            </div>
++          </section>
++        ) : null}
++
++        <div className="admin-form-actions"><Link href="/admin/insignias">Cancelar</Link><button type="submit" disabled={!valid || pending}>{pending ? "Guardando…" : submitLabel}</button></div>
++      </form>
++    </>
++  );
++}
+diff --git a/src/features/admin/badge-form.test.ts b/src/features/admin/badge-form.test.ts
+new file mode 100644
+index 0000000..2571c44
+--- /dev/null
++++ b/src/features/admin/badge-form.test.ts
+@@ -0,0 +1,43 @@
++import { describe, expect, it } from "vitest";
++
++import { normalizeBadgeCode, normalizeBadgeSlug, readBadgeForm } from "./badge-form";
++
++function baseForm() {
++  const data = new FormData();
++  data.set("name", "Máximo ganador"); data.set("code", "MAXIMO_GANADOR"); data.set("slug", "maximo-ganador");
++  data.set("description", "Reconoce al mayor ganador."); data.set("publicRule", "Pertenece a quien tenga más títulos.");
++  data.set("kind", "UNIQUE"); data.set("assignmentMode", "AUTOMATIC"); data.set("recipientType", "COMPETITOR");
++  data.set("permanenceMode", "PERMANENT"); data.set("status", "DRAFT"); data.set("scopeType", "GLOBAL");
++  data.set("metricId", "metric-id"); data.set("operator", "TOP_ONE"); data.set("reason", "Versión inicial");
++  return data;
++}
++
++describe("badge form", () => {
++  it("normalizes public identifiers", () => {
++    expect(normalizeBadgeCode("Máximo ganador 2026")).toBe("MAXIMO_GANADOR_2026");
++    expect(normalizeBadgeSlug("Máximo ganador 2026")).toBe("maximo-ganador-2026");
++  });
++
++  it("reads a valid automatic unique badge", () => {
++    const badge = readBadgeForm(baseForm());
++    expect(badge).toMatchObject({ kind: "UNIQUE", assignmentMode: "AUTOMATIC", operator: "TOP_ONE", scopeType: "GLOBAL" });
++  });
++
++  it("requires strictly increasing tier thresholds", () => {
++    const data = baseForm(); data.set("kind", "TIERED"); data.set("operator", "GTE");
++    data.append("tierName", "Bronce"); data.append("tierThreshold", "3"); data.append("tierColor", "#cd7f32");
++    data.append("tierName", "Plata"); data.append("tierThreshold", "3"); data.append("tierColor", "#c0c0c0");
++    expect(() => readBadgeForm(data)).toThrow("estrictamente crecientes");
++  });
++
++  it("does not accept a unique badge without top-one semantics", () => {
++    const data = baseForm(); data.set("operator", "GTE");
++    expect(() => readBadgeForm(data)).toThrow("Máximo actual");
++  });
++
++  it("accepts editorial achievements without a metric", () => {
++    const data = baseForm(); data.set("kind", "ACHIEVEMENT"); data.set("assignmentMode", "EDITORIAL");
++    data.delete("metricId"); data.delete("operator"); data.delete("reason");
++    expect(readBadgeForm(data).metricId).toBeNull();
++  });
++});
+diff --git a/src/features/admin/badge-form.ts b/src/features/admin/badge-form.ts
+new file mode 100644
+index 0000000..82cbe21
+--- /dev/null
++++ b/src/features/admin/badge-form.ts
+@@ -0,0 +1,136 @@
++const CODE_PATTERN = /^[A-Z0-9]+(?:_[A-Z0-9]+)*$/;
++const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
++
++export type BadgeFormState = { error?: string };
++export type BadgeTierInput = {
++  rank: number;
++  code: string;
++  displayName: string;
++  threshold: number;
++  color: string | null;
++};
++
++export type BadgeFormValues = {
++  code: string;
++  name: string;
++  slug: string;
++  description: string;
++  publicRule: string;
++  imageUrl: string | null;
++  kind: "UNIQUE" | "ACHIEVEMENT" | "TIERED";
++  assignmentMode: "AUTOMATIC" | "EDITORIAL";
++  recipientType: "COMPETITOR" | "COMPETITION" | "ORGANIZATION";
++  permanenceMode: "PERMANENT" | "TEMPORARY";
++  status: "DRAFT" | "ACTIVE" | "ARCHIVED";
++  scopeType: "GLOBAL" | "COMPETITION";
++  competitionId: string | null;
++  metricId: string | null;
++  operator: "GTE" | "EQ" | "TOP_ONE" | "FIRST" | null;
++  threshold: number | null;
++  reason: string | null;
++  tiers: BadgeTierInput[];
++};
++
++function oneOf<T extends string>(value: string, allowed: readonly T[], label: string): T {
++  if (!allowed.includes(value as T)) throw new Error(`${label} no es válido.`);
++  return value as T;
++}
++
++function required(formData: FormData, name: string, label: string, max: number) {
++  const value = String(formData.get(name) ?? "").trim();
++  if (!value) throw new Error(`${label} es obligatorio.`);
++  if (value.length > max) throw new Error(`${label} no puede superar ${max} caracteres.`);
++  return value;
++}
++
++export function normalizeBadgeCode(value: string) {
++  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase()
++    .replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
++}
++
++export function normalizeBadgeSlug(value: string) {
++  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim()
++    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
++}
++
++function optionalUrl(value: string) {
++  if (!value) return null;
++  const parsed = new URL(value);
++  if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("La imagen debe usar una URL http o https.");
++  return parsed.toString();
++}
++
++function parseNumber(value: FormDataEntryValue | null, label: string) {
++  const raw = String(value ?? "").trim();
++  if (!raw) return null;
++  const number = Number(raw);
++  if (!Number.isFinite(number) || number < 0) throw new Error(`${label} debe ser un número mayor o igual a cero.`);
++  return number;
++}
++
++function readTiers(formData: FormData): BadgeTierInput[] {
++  const names = formData.getAll("tierName").map(String);
++  const thresholds = formData.getAll("tierThreshold").map(String);
++  const colors = formData.getAll("tierColor").map(String);
++  const tiers = names.map((rawName, index) => {
++    const displayName = rawName.trim();
++    const threshold = Number(thresholds[index]);
++    if (!displayName || !Number.isFinite(threshold) || threshold < 0) {
++      throw new Error("Cada nivel debe tener nombre y un umbral válido.");
++    }
++    return {
++      rank: index + 1,
++      code: normalizeBadgeCode(displayName),
++      displayName,
++      threshold,
++      color: colors[index]?.trim() || null,
++    };
++  });
++  if (new Set(tiers.map(({ code }) => code)).size !== tiers.length) throw new Error("Los niveles deben tener nombres diferentes.");
++  for (let index = 1; index < tiers.length; index += 1) {
++    if (tiers[index].threshold <= tiers[index - 1].threshold) throw new Error("Los umbrales de niveles deben ser estrictamente crecientes.");
++  }
++  return tiers;
++}
++
++export function readBadgeForm(formData: FormData): BadgeFormValues {
++  const name = required(formData, "name", "El nombre", 160);
++  const code = normalizeBadgeCode(String(formData.get("code") ?? name));
++  const slug = normalizeBadgeSlug(String(formData.get("slug") ?? name));
++  if (!CODE_PATTERN.test(code) || code.length > 80) throw new Error("El código debe usar letras mayúsculas, números y guiones bajos.");
++  if (!SLUG_PATTERN.test(slug) || slug.length > 160) throw new Error("El slug debe usar minúsculas, números y guiones.");
++
++  const kind = oneOf(String(formData.get("kind") ?? ""), ["UNIQUE", "ACHIEVEMENT", "TIERED"] as const, "El tipo");
++  const assignmentMode = oneOf(String(formData.get("assignmentMode") ?? ""), ["AUTOMATIC", "EDITORIAL"] as const, "El modo de asignación");
++  if (assignmentMode === "EDITORIAL" && kind === "TIERED") {
++    throw new Error("Las insignias editoriales por niveles se habilitarán junto con el motor de otorgamientos.");
++  }
++  const recipientType = oneOf(String(formData.get("recipientType") ?? ""), ["COMPETITOR", "COMPETITION", "ORGANIZATION"] as const, "El destinatario");
++  const permanenceMode = oneOf(String(formData.get("permanenceMode") ?? "PERMANENT"), ["PERMANENT", "TEMPORARY"] as const, "La permanencia");
++  const status = oneOf(String(formData.get("status") ?? "DRAFT"), ["DRAFT", "ACTIVE", "ARCHIVED"] as const, "El estado");
++  const scopeType = oneOf(String(formData.get("scopeType") ?? "GLOBAL"), ["GLOBAL", "COMPETITION"] as const, "El ámbito");
++  const competitionId = scopeType === "COMPETITION" ? required(formData, "competitionId", "La competencia", 80) : null;
++  const description = required(formData, "description", "La descripción", 2_000);
++  const publicRule = required(formData, "publicRule", "La regla pública", 1_000);
++  const imageUrl = optionalUrl(String(formData.get("imageUrl") ?? "").trim());
++  const metricId = assignmentMode === "AUTOMATIC" ? required(formData, "metricId", "La métrica", 80) : null;
++  const operator = assignmentMode === "AUTOMATIC"
++    ? oneOf(String(formData.get("operator") ?? ""), ["GTE", "EQ", "TOP_ONE", "FIRST"] as const, "El operador")
++    : null;
++  const threshold = assignmentMode === "AUTOMATIC" && kind !== "TIERED"
++    ? parseNumber(formData.get("threshold"), "El umbral")
++    : null;
++  const tiers = kind === "TIERED" ? readTiers(formData) : [];
++  if (assignmentMode === "AUTOMATIC" && kind === "TIERED" && tiers.length < 2) throw new Error("Una insignia por niveles necesita al menos dos niveles.");
++  if (kind === "UNIQUE" && operator !== "TOP_ONE") throw new Error("Una insignia única automática debe utilizar el operador Máximo actual.");
++  const reason = assignmentMode === "AUTOMATIC" ? required(formData, "reason", "El motivo de la versión", 500) : null;
++
++  return { code, name, slug, description, publicRule, imageUrl, kind, assignmentMode, recipientType, permanenceMode, status, scopeType, competitionId, metricId, operator, threshold, reason, tiers };
++}
++
++export function badgeActionError(error: unknown) {
++  if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
++    return "Ya existe una insignia con ese código, slug o nivel.";
++  }
++  return error instanceof Error ? error.message : "No se pudo guardar la insignia.";
++}

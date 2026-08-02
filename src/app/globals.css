@@ -1880,6 +1880,76 @@ a {
   margin-top: 34px;
 }
 
+.badge-editor {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 1100px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.badge-editor > * {
+  grid-column: 1;
+}
+
+.badge-tier-list {
+  display: grid;
+  gap: 12px;
+}
+
+.badge-tier-row {
+  display: grid;
+  grid-template-columns: 38px minmax(150px, 1fr) 130px 150px auto;
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.badge-tier-row > strong {
+  align-self: center;
+  color: var(--accent);
+  text-align: center;
+}
+
+.badge-tier-row button,
+.admin-row-actions button,
+.badge-tiers .admin-section-heading button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.badge-tier-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.admin-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-row-actions form {
+  margin: 0;
+}
+
+.admin-table td small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.badge-admin-summary {
+  margin-bottom: 24px;
+}
+
 .admin-form-section {
   display: grid;
   grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
@@ -2129,6 +2199,15 @@ a {
   .admin-field-wide,
   .admin-form-actions {
     grid-column: 1;
+  }
+
+  .badge-tier-row {
+    grid-template-columns: 34px 1fr;
+  }
+
+  .badge-tier-row > label,
+  .badge-tier-row > button {
+    grid-column: 2;
   }
 }
 
