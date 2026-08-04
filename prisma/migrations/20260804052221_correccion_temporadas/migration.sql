@@ -1,0 +1,2 @@
+-- RenameIndex
+ALTER INDEX "competitor_statistic_individual_titles_individual_titles_reache" RENAME TO "competitor_statistic_individual_titles_individual_titles_re_idx";
