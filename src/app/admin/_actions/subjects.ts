@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import {
   actionError,
+  initialSeasonForYear,
   optionalDate,
   optionalUrl,
   readSubjectForm,
@@ -307,6 +308,7 @@ export async function createCompetition(
     const organizationId = String(formData.get("organizationId") ?? "");
     const shortName = String(formData.get("shortName") ?? "").trim() || null;
     const foundedOn = optionalDate(formData.get("foundedOn"));
+    const initialSeason = initialSeasonForYear(new Date().getUTCFullYear());
     if (!organizationId) throw new Error("Seleccioná una organización.");
     await db.$transaction(async (tx) => {
       const created = await tx.subject.create({
@@ -328,6 +330,7 @@ export async function createCompetition(
               defaultScope: "LOCAL",
               defaultRegionId: null,
               foundedOn,
+              seasons: { create: initialSeason },
             },
           },
         },

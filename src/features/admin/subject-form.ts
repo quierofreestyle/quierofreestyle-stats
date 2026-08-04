@@ -13,6 +13,19 @@ export type SubjectFormState = {
 
 export const INITIAL_SUBJECT_FORM_STATE: SubjectFormState = {};
 
+export function initialSeasonForYear(year: number) {
+  if (!Number.isInteger(year) || year < 1) {
+    throw new Error("El año de la temporada no es válido.");
+  }
+
+  return {
+    name: String(year),
+    startsOn: new Date(Date.UTC(year, 0, 1)),
+    endsOn: new Date(Date.UTC(year, 11, 31)),
+    status: "ACTIVE" as const,
+  };
+}
+
 export function normalizeSlug(value: string): string {
   return value
     .normalize("NFD")
