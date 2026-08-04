@@ -13,10 +13,15 @@ const source: PublicCompetitorSource = {
     parent: { name: "Córdoba", parent: { name: "Argentina" } },
   },
   subject: {
+    id: "competitor-1",
     slug: "mc-ejemplo",
     displayName: "MC Ejemplo",
     bio: "Competidor de freestyle.",
     names: [{ value: "Alias anterior", kind: "PREVIOUS" }],
+    badgeAwards: [],
+    badgeProgress: [],
+    tierAchievements: [],
+    badgePreferences: [],
   },
   placements: [
     {

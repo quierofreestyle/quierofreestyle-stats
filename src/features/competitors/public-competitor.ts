@@ -1,5 +1,6 @@
 import { formatEventDate } from "../competitions/model";
 import { publicEventHref } from "../events/public-event";
+import { toPublicBadge, type PublicBadgeSource } from "../badges/public-badge";
 
 type RegionSource = {
   name: string;
@@ -41,10 +42,44 @@ export type PublicCompetitorSource = {
   locationVisibility: string;
   homeRegion: RegionSource;
   subject: {
+    id: string;
     slug: string;
     displayName: string;
     bio: string | null;
     names: Array<{ value: string; kind: string }>;
+    badgeAwards: Array<{
+      awardedOn: Date;
+      publicJustification: string | null;
+      badgeInstanceId: string;
+    }>;
+    badgeProgress: Array<{
+      metricValue: number;
+      currentTier: PublicBadgeSource["currentTier"];
+      ruleVersion: { tiers: PublicBadgeSource["tiers"] };
+      badgeInstance: {
+        id: string;
+        slug: string;
+        displayName: string;
+        description: string;
+        status: string;
+        definition: {
+          kind: string;
+          publicRule: string;
+          imageUrl: string | null;
+        };
+      };
+    }>;
+    tierAchievements: Array<{
+      badgeInstanceId: string;
+      achievedOn: Date;
+      tier: { id: string; displayName: string };
+      sourceEvent: {
+        slug: string;
+        title: string;
+        competition: { subject: { slug: string } };
+      } | null;
+    }>;
+    badgePreferences: Array<{ badgeInstanceId: string }>;
   };
   placements: PlacementSource[];
 };
@@ -106,6 +141,55 @@ export function toPublicCompetitor(source: PublicCompetitorSource) {
     };
   });
 
+  const hiddenBadges = new Set(
+    source.subject.badgePreferences.map(({ badgeInstanceId }) => badgeInstanceId),
+  );
+  const awards = new Map(
+    source.subject.badgeAwards.map((award) => [award.badgeInstanceId, award]),
+  );
+  const badges = source.subject.badgeProgress
+    .filter(({ badgeInstance }) =>
+      awards.has(badgeInstance.id) && !hiddenBadges.has(badgeInstance.id),
+    )
+    .map((progress) => {
+      const award = awards.get(progress.badgeInstance.id)!;
+      return toPublicBadge({
+        instanceId: progress.badgeInstance.id,
+        slug: progress.badgeInstance.slug,
+        name: progress.badgeInstance.displayName,
+        description: progress.badgeInstance.description,
+        kind: progress.badgeInstance.definition.kind,
+        publicRule: progress.badgeInstance.definition.publicRule,
+        imageUrl: progress.badgeInstance.definition.imageUrl,
+        status: progress.badgeInstance.status,
+        awardedOn: award.awardedOn,
+        publicJustification: award.publicJustification,
+        metricValue: Number(progress.metricValue),
+        currentTier: progress.currentTier
+          ? { ...progress.currentTier, threshold: Number(progress.currentTier.threshold) }
+          : null,
+        tiers: progress.ruleVersion.tiers.map((tier) => ({
+          ...tier,
+          threshold: Number(tier.threshold),
+        })),
+        achievements: source.subject.tierAchievements
+          .filter(({ badgeInstanceId }) => badgeInstanceId === progress.badgeInstance.id)
+          .map((achievement) => ({
+            tierId: achievement.tier.id,
+            displayName: achievement.tier.displayName,
+            achievedOn: achievement.achievedOn,
+            eventHref: achievement.sourceEvent
+              ? publicEventHref(
+                  achievement.sourceEvent.competition.subject.slug,
+                  achievement.sourceEvent.slug,
+                )
+              : null,
+            eventName: achievement.sourceEvent?.title ?? null,
+          })),
+      });
+    })
+    .sort((left, right) => right.awardedOn.getTime() - left.awardedOn.getTime());
+
   return {
     slug: source.subject.slug,
     href: competitorHref(source.subject.slug),
@@ -122,6 +206,7 @@ export function toPublicCompetitor(source: PublicCompetitorSource) {
         item.type === "CHAMPION" && item.resolution !== "UNDECIDED",
     ).length,
     runnerUps: appearances.filter((item) => item.type === "RUNNER_UP").length,
+    badges,
     appearances,
   };
 }

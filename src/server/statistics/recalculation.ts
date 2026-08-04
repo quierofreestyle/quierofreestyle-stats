@@ -521,7 +521,11 @@ export async function processRecalculationRun(runId: string) {
         });
         return completed;
       },
-      { isolationLevel: "Serializable" },
+      {
+        isolationLevel: "Serializable",
+        maxWait: 10_000,
+        timeout: 120_000,
+      },
     );
   } catch (error) {
     const payload =

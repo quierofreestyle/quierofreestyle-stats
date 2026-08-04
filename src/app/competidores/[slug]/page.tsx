@@ -76,6 +76,72 @@ export default async function CompetitorPage({ params }: Props) {
         </section>
       ) : null}
 
+      <section className="competitor-badges" aria-labelledby="competitor-badges-title">
+        <div className="section-heading">
+          <p className="eyebrow">Reconocimientos</p>
+          <h2 id="competitor-badges-title">Insignias</h2>
+        </div>
+
+        {competitor.badges.length ? (
+          <div className="public-badge-grid">
+            {competitor.badges.map((badge) => (
+              <article className="public-badge-card" key={badge.id}>
+                <Link className="public-badge-art-link" href={badge.href}>
+                  <span
+                    className="public-badge-art"
+                    role="img"
+                    aria-label={`Insignia ${badge.name}`}
+                    style={badge.imageUrl ? { backgroundImage: `url(${badge.imageUrl})` } : undefined}
+                  >
+                    {!badge.imageUrl ? badge.name.slice(0, 2).toUpperCase() : null}
+                  </span>
+                </Link>
+                <div className="public-badge-copy">
+                  <div className="public-badge-heading">
+                    <div>
+                      {badge.currentTier ? (
+                        <p className="public-badge-tier" style={badge.color ? { color: badge.color } : undefined}>
+                          Nivel {badge.currentTier.displayName}
+                        </p>
+                      ) : (
+                        <p className="public-badge-tier">Insignia obtenida</p>
+                      )}
+                      <h3><Link href={badge.href}>{badge.name}</Link></h3>
+                    </div>
+                    {badge.isArchived ? <span className="archived-label">Discontinuada</span> : null}
+                  </div>
+                  <p>{badge.description}</p>
+
+                  {badge.nextTier ? (
+                    <div className="badge-progress">
+                      <div>
+                        <span>{badge.metricValue} de {badge.nextTier.threshold}</span>
+                        <span>Próximo nivel: {badge.nextTier.displayName}</span>
+                      </div>
+                      <span className="badge-progress-track" aria-label={`${Math.round(badge.progressPercent)}% de progreso`}>
+                        <span style={{ width: `${badge.progressPercent}%` }} />
+                      </span>
+                    </div>
+                  ) : badge.currentTier ? (
+                    <p className="badge-max-tier">Nivel máximo alcanzado</p>
+                  ) : null}
+
+                  <div className="public-badge-meta">
+                    <span>Obtenida el {badge.awardedOnLabel}</span>
+                    <Link href={badge.href}>Ver detalle →</Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <section className="empty-state badge-empty-state">
+            <h3>Todavía no tiene insignias</h3>
+            <p>Sus logros aparecerán aquí cuando alcance una regla activa.</p>
+          </section>
+        )}
+      </section>
+
       <section className="competitor-history">
         <div className="section-heading">
           <p className="eyebrow">Trayectoria publicada</p>
