@@ -2489,6 +2489,138 @@ a {
   margin-top: 26px;
 }
 
+.badge-settings-page {
+  max-width: 1050px;
+}
+
+.badge-settings-header,
+.badge-settings-profile-heading,
+.badge-visibility-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.badge-settings-header {
+  margin-bottom: 34px;
+}
+
+.badge-settings-header h1 {
+  margin: 4px 0 10px;
+}
+
+.badge-settings-header p:last-child,
+.badge-visibility-item > div > p:not(.public-badge-tier) {
+  color: var(--muted);
+}
+
+.profile-settings-message {
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.managed-badge-profile + .managed-badge-profile {
+  margin-top: 52px;
+}
+
+.badge-settings-profile-heading a {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.badge-visibility-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.badge-visibility-item {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.badge-visibility-art {
+  width: 82px;
+  flex: 0 0 auto;
+}
+
+.badge-visibility-item > div {
+  flex: 1;
+}
+
+.badge-visibility-item h3 {
+  margin: 0 0 7px;
+}
+
+.badge-visibility-item > div > p:not(.public-badge-tier) {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.badge-visibility-item form {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  width: 190px;
+}
+
+.badge-visibility-item form small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.visibility-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.visibility-switch span {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-raised);
+}
+
+.visibility-switch span::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted);
+  content: "";
+  transition: transform 0.2s ease;
+}
+
+.visibility-switch[aria-checked="true"] {
+  color: var(--accent);
+}
+
+.visibility-switch[aria-checked="true"] span {
+  border-color: rgba(244, 189, 25, 0.55);
+  background: var(--accent-soft);
+}
+
+.visibility-switch[aria-checked="true"] span::after {
+  background: var(--accent);
+  transform: translateX(20px);
+}
+
 .badge-detail-hero {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);

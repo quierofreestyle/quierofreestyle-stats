@@ -78,3 +78,37 @@ export async function requireAdminCapability(
 
   return user;
 }
+
+export async function requireAuthenticatedUser(nextPath: string) {
+  const user = await getAuthenticatedAppUser();
+
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  return user;
+}
+
+export async function requireManagedCompetitor(
+  subjectId: string,
+  nextPath = "/mi-perfil/insignias",
+) {
+  const user = await requireAuthenticatedUser(nextPath);
+  const management = await db.subjectManager.findFirst({
+    where: {
+      userId: user.id,
+      subjectId,
+      accessLevel: { in: ["OWNER", "EDITOR"] },
+      validFrom: { lte: new Date() },
+      OR: [{ validTo: null }, { validTo: { gt: new Date() } }],
+      subject: { type: "COMPETITOR" },
+    },
+    select: { id: true },
+  });
+
+  if (!management) {
+    redirect("/sin-acceso");
+  }
+
+  return user;
+}
