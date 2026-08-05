@@ -44,8 +44,8 @@ export default async function PublicBadgePage({ params }: Props) {
 
   return (
     <main className="page-shell content-page badge-detail-page">
-      <Link className="back-link" href="/competidores">
-        <span aria-hidden>←</span> Volver a competidores
+      <Link className="back-link" href="/insignias">
+        <span aria-hidden>←</span> Volver a insignias
       </Link>
 
       <section className="badge-detail-hero">

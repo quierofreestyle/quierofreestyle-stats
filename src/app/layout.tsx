@@ -32,6 +32,7 @@ export default function RootLayout({
             <Link href="/eventos">Eventos</Link>
             <Link href="/competidores">Competidores</Link>
             <Link href="/ranking">Ranking</Link>
+            <Link href="/insignias">Insignias</Link>
           </nav>
         </header>
         {children}

@@ -2,6 +2,39 @@ import "server-only";
 
 import { db } from "../db";
 
+export function listPublicBadges() {
+  return db.badgeInstance.findMany({
+    where: { status: { in: ["ACTIVE", "ARCHIVED"] } },
+    orderBy: [{ status: "asc" }, { displayName: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      displayName: true,
+      description: true,
+      status: true,
+      definition: {
+        select: {
+          kind: true,
+          imageUrl: true,
+          recipientType: true,
+          ruleVersions: {
+            orderBy: { versionNumber: "desc" },
+            take: 1,
+            select: {
+              tiers: {
+                orderBy: { rank: "asc" },
+                take: 1,
+                select: { imageUrl: true, color: true },
+              },
+            },
+          },
+        },
+      },
+      scope: { select: { scopeType: true } },
+    },
+  });
+}
+
 export function findPublicBadge(slug: string) {
   return db.badgeInstance.findFirst({
     where: { slug, status: { in: ["ACTIVE", "ARCHIVED"] } },
